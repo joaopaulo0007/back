@@ -1,5 +1,6 @@
 import pkg from 'pg';
 const { Pool } = pkg;
+import fs from "fs";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -9,39 +10,48 @@ const pool = new Pool({
 });
 
 class UserService {
-  async createUser(nome, senha, email, username, cpf, data_aniversario, especializacao) {
+  async createUser(nome, senha, email, username, cpf, data_aniversario, especializacao, token_verificacao) {
     const client = await pool.connect();
     try {
-        const result = await client.query(
-            `INSERT INTO usuario (nome, senha, email, username, cpf, data_aniversario) 
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-            [nome, senha, email, username, cpf, data_aniversario]
-        );
+      const result = await client.query(
+        `INSERT INTO usuario (nome, senha, email, username, cpf, data_aniversario, token_verificacao, verificado) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *`,
+        [nome, senha, email, username, cpf, data_aniversario, token_verificacao]
+      );
 
-        console.log("Resultado da inserção do usuário:", result);
+      console.log("Resultado da inserção do usuário:", result);
 
-        if (!result.rows || result.rows.length === 0) {
-            throw new Error("Erro ao criar usuário: Nenhum dado retornado do banco.");
-        }
+      if (!result.rows || result.rows.length === 0) {
+        throw new Error("Erro ao criar usuário: Nenhum dado retornado do banco.");
+      }
 
-        const id = result.rows[0].id;
-        console.log("Usuário criado com ID:", id);
+      const id = result.rows[0].id;
+      console.log("Usuário criado com ID:", id);
 
-        if (especializacao) {
-            console.log("Criando médico com ID:", id, "e especialização:", especializacao);
-            const resultado = await this.createMedico(id, especializacao);
-            console.log("Resultado da inserção do médico:", resultado);
-            return resultado; 
-        }
+      if (especializacao) {
+        console.log("Criando médico com ID:", id, "e especialização:", especializacao);
+        const resultado = await this.createMedico(id, especializacao);
+        console.log("Resultado da inserção do médico:", resultado);
+        return resultado;
+      }
 
-        return result.rows[0]; 
+      return result.rows[0];
     } catch (err) {
-        console.error("❌ Erro ao criar usuário:", err);
-        throw err;
+      console.error("❌ Erro ao criar usuário:", err);
+      throw err;
     } finally {
-        client.release();
+      client.release();
     }
-}
+  }
+  async getMedicoByEspecializacao(especializacao){
+    const client = await pool.connect();
+    try {
+      const result= await client.query(`SELECT * FROM medico WHERE especializacao=$1`,[especializacao])
+      return result.rows;
+    } catch (error) {
+      return error
+    }
+  }
 
   async createMedico(id, especializacao) {
     const client = await pool.connect();
@@ -69,10 +79,10 @@ class UserService {
         client.release();
     }
   }
-  async createConsultaAgendada(id_paciente,id_medico,dataDate){
+  async createConsultaAgendada(id_paciente,id_medico,horario_inicio,horario_fim){
     const client =await pool.connect()
     try {
-        const result = await client.query(`INSERT INTO consultas_agendadas(id_usuario, id_medico,data) VALUES ($1,$2,$3) RETURNING*`,[id_paciente,id_medico,data])
+        const result = await client.query(`INSERT INTO consultas_agendadas(id_usuario, id_medico,horario_inicio,horario_fim) VALUES ($1,$2,$3,$4) RETURNING*`,[id_paciente,id_medico,horario_inicio,horario_fim])
         return result.rows[0];
 
     } catch(err){
@@ -99,7 +109,7 @@ class UserService {
   async createHorariomedico(id_medico,dia_semana,data_inicio,data_fim){
     const client =await pool.connect()
     try {
-        const result=await client.query(`INSERT INTO horario_medico(id_medico,dia_semana,data_inicio,data_fim) VALUES($1,$2,$3,$4) RETURNING*`,[id_medico,dia_semana,data_inicio,data_fim])
+        const result=await client.query(`INSERT INTO horario_medico(id_medico,dia_semana,horario_inicio,horario_fim) VALUES($1,$2,$3,$4) RETURNING*`,[id_medico,dia_semana,data_inicio,data_fim])
         return result.rows[0];
 
     } catch(err){
@@ -195,11 +205,11 @@ class UserService {
       client.release();
     }
   }
-  async getHorarioById(id ) {
+  async getHorarioByMedico(id_medico ) {
     const client = await pool.connect();
     try {
-      const result = await client.query(`SELECT * FROM horario_medico WHERE id = $1`, [id]);
-      return result.rows[0];
+      const result = await client.query(`SELECT * FROM horario_medico WHERE id_medico = $1`, [id_medico]);
+      return result.rows;
     } catch (err) {
       console.error("❌ Erro ao buscar horario", err);
       throw err;
@@ -220,7 +230,7 @@ class UserService {
     }
   }
 
-  async updateUser(id , nome, senha, email, username, cpf,data_aniversario) {
+  async updateUser(id , nome, senha, email, username, cpf,data_aniversario,verificado,token_verificacao) {
     const client = await pool.connect();
     try {
       const fields= [];
@@ -247,8 +257,16 @@ class UserService {
         values.push(cpf);
       }
       if(data_aniversario){
-        FileSystem.push(`data_aniversario=$${fields.length+1}`)
+        fields.push(`data_aniversario=$${fields.length+1}`)
         values.push(data_aniversario)
+      }
+      if(verificado!==undefined){
+        fields.push(`verificado=$${fields.length+1}`)
+        values.push(verificado)
+      }
+      if(token_verificacao){
+        fields.push(`token_verificacao=$${fields.length+1}`)
+        values.push(token_verificacao)
       }
 
       if (fields.length === 0) {
@@ -264,6 +282,18 @@ class UserService {
       console.error("❌ Erro ao atualizar usuário", err);
       throw err;
     } finally {
+      client.release();
+    }
+  }
+  async updateVericationToken(id , token_verificacao) {
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`UPDATE usuario SET token_verificacao = $1 WHERE id = $2 RETURNING *`, [token_verificacao, id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error("❌ Erro ao atualizar token de verificação", error);
+      throw error;
+    }finally{
       client.release();
     }
   }
@@ -343,7 +373,7 @@ class UserService {
       client.release();
     }
   }
-  async updateConsultaAgendada(id , id_paciente , id_medico , data ) {
+  async updateConsultaAgendada(id , id_paciente , id_medico , horario_inicio, horario_fim ) {
     const client = await pool.connect();
     try {
       const fields= [];
@@ -357,9 +387,13 @@ class UserService {
         fields.push(`id_medico = $${fields.length + 1}`);
         values.push(id_medico);
       }
-      if (data) {
+      if (horario_inicio) {
         fields.push(`data = $${fields.length + 1}`);
-        values.push(data.toISO());
+        values.push(horario_inicio.toISO());
+      }
+      if(horario_fim){
+        fields.push(`data = $${fields.length + 1}`);
+        values.push(horario_fim.toISO());
       }
 
       if (fields.length === 0) {
@@ -520,6 +554,16 @@ class UserService {
       throw err;
     } finally {
       client.release();
+    }
+  }
+ 
+  async getConsultasAgendadasByMedico(id_medico){
+    const client= await pool.connect();
+    try {
+      const result= await client.query(`SELECT * FROM consultas_agendadas WHERE id_medico= $1 order by horario_inicio `,[id_medico])
+      return result.rows;
+    } catch (error) {
+       return error
     }
   }
 }
