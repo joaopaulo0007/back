@@ -7,7 +7,7 @@ const config = configurar;
 // Rotas para Usuário
 router.post("/login",config.Login)
 
-router.post("/usuarios", config.addUser);
+router.post("/cadastro", config.addUser);
 router.get("/usuarios/:id", config.getUser);
 router.put("/usuarios/:id",config.updateUser);
 

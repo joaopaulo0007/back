@@ -56,22 +56,34 @@ class config {
     }
     async addUser(request, response) {
         try {
-            const { nome, email, cpf, senha, username, data_aniversario, especializacao } = request.body;
-    
+            const { nome, email, cpf, senha, data_aniversario, especializacao, telefone, crm } = request.body;
             const hash = await hashSenha(String(senha));
-    
-            const result = await servicos.createUser(nome, hash, email, username, cpf, data_aniversario, especializacao);
-    
+            const codigo_verificacao = crypto.randomBytes(3).toString('hex');
+            
+            const result = await servicos.createUser(
+                nome,
+                hash,
+                email,
+                cpf,
+                data_aniversario,
+                telefone,
+                especializacao,
+                crm,
+                false,
+                codigo_verificacao
+            );
+
             if (!result || !result.id) {
                 return response.status(500).json({ error: "Erro ao criar usuário no banco de dados" });
             }
-            //criar um código de 6 digitos para o usuario
-            const codigo_verificacao=crypto.randomBytes(3).toString('hex')
+
             const token = jwt.sign({ userID: result.id }, process.env.PRIVATE_KEY, { expiresIn: '2h' });
-            await servicos.updateVericationToken(result.id, codigo_verificacao);
             await sendVerificationEmail(email, codigo_verificacao);
-            console.log(codigo_verificacao)
-            return response.status(201).json({ user: result, message: "Usuário criado. Verifique seu e-mail." });
+
+            return response.status(201).json({ 
+                user: result, 
+                message: "Usuário criado. Verifique seu e-mail." 
+            });
         } catch (error) {
             console.error(error);
             return response.status(500).json({ error: "Erro ao adicionar usuário" });
@@ -80,7 +92,7 @@ class config {
     
     async addMedico(request, response) {
         try {
-            const { id_usuario, especializacao } = request.body
+            const { id_usuario, especializacao,crm } = request.body
             const result = await servicos.createMedico(id_usuario, especializacao)
             return response.status(201).json(result)
         } catch (err) {
@@ -249,8 +261,8 @@ class config {
     async updateUser(request, response) {
         try {
             const id = Number(request.params.id)
-        const { nome, senha, email, username, cpf, data_aniversario} = request.body
-        const result =await servicos.updateUser(id, nome, senha, email, username, cpf)
+        const { nome, senha, email, cpf, data_aniversario} = request.body
+        const result =await servicos.updateUser(id, nome, senha, email, cpf)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:"erro ao atualizar usuario"})
@@ -382,14 +394,16 @@ class config {
           if (!user) {
             return response.status(404).json({ message: "Usuário não encontrado" });
           }
-    
-          if (user.verificationToken !== token) {
+
+          if (user.token_verificacao !== token) {
+            console.log(token)
+            console.log(user.token_verificacao)
             return response.status(400).json({ message: "Token inválido" });
           }
     
           user.verificado = true;
-          user.token_verificacao = null;
-          await servicos.updateUser(user.id, user.nome, user.senha, user.email, user.username, user.cpf, user.data_aniversario, user.verificado, user.token_verificacao);
+          console.log(user)
+          await servicos.updateUser(user.id,user.nome,user.senha,user.email,user.cpf,user.data_aniversario,user.telefone,user.verificado);
     
           return response.status(200).json({ message: "Email verificado com sucesso!" });
         } catch (error) {

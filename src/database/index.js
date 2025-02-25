@@ -10,16 +10,17 @@ const pool = new Pool({
 });
 
 class UserService {
-  async createUser(nome, senha, email, username, cpf, data_aniversario, especializacao, token_verificacao) {
+  async createUser(nome, senha, email, cpf, data_aniversario, telefone, especializacao, crm, verificado, token_verificacao) {
+    console.log("data de aniversario ",data_aniversario)
+    console.log(token_verificacao)
+    console.log("telefone ",telefone)
     const client = await pool.connect();
     try {
       const result = await client.query(
-        `INSERT INTO usuario (nome, senha, email, username, cpf, data_aniversario, token_verificacao, verificado) 
-        VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING *`,
-        [nome, senha, email, username, cpf, data_aniversario, token_verificacao]
+        `INSERT INTO usuario (nome, senha, email, cpf, data_aniversario, telefone, verificado, token_verificacao) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+        [nome, senha, email, cpf, data_aniversario, telefone, verificado, token_verificacao]
       );
-
-      console.log("Resultado da inserção do usuário:", result);
 
       if (!result.rows || result.rows.length === 0) {
         throw new Error("Erro ao criar usuário: Nenhum dado retornado do banco.");
@@ -29,9 +30,7 @@ class UserService {
       console.log("Usuário criado com ID:", id);
 
       if (especializacao) {
-        console.log("Criando médico com ID:", id, "e especialização:", especializacao);
-        const resultado = await this.createMedico(id, especializacao);
-        console.log("Resultado da inserção do médico:", resultado);
+        const resultado = await this.createMedico(id, especializacao, crm);
         return resultado;
       }
 
@@ -53,10 +52,10 @@ class UserService {
     }
   }
 
-  async createMedico(id, especializacao) {
+  async createMedico(id, especializacao,crm) {
     const client = await pool.connect();
     try {
-      const result = await client.query(`INSERT INTO medico (id_usuario, especializacao) VALUES ($1, $2) RETURNING *`, [id, especializacao]);
+      const result = await client.query(`INSERT INTO medico (id_usuario, especializacao,crm) VALUES ($1, $2,$3) RETURNING *`, [id, especializacao,crm]);
       return result.rows[0];
     } catch (err) {
       console.log("❌ Erro ao criar médico", err);
@@ -230,65 +229,67 @@ class UserService {
     }
   }
 
-  async updateUser(id , nome, senha, email, username, cpf,data_aniversario,verificado,token_verificacao) {
+  async updateUser(id, nome, senha, email, cpf, data_aniversario, telefone, verificado, token_verificacao) {
     const client = await pool.connect();
     try {
-      const fields= [];
-      const values  = [];
+        const fields = [];
+        const values = [];
 
-      if (nome) {
-        fields.push(`nome = $${fields.length + 1}`);
-        values.push(nome);
-      }
-      if (senha) {
-        fields.push(`senha = $${fields.length + 1}`);
-        values.push(senha);
-      }
-      if (email) {
-        fields.push(`email = $${fields.length + 1}`);
-        values.push(email);
-      }
-      if (username) {
-        fields.push(`username = $${fields.length + 1}`);
-        values.push(username);
-      }
-      if (cpf) {
-        fields.push(`cpf = $${fields.length + 1}`);
-        values.push(cpf);
-      }
-      if(data_aniversario){
-        fields.push(`data_aniversario=$${fields.length+1}`)
-        values.push(data_aniversario)
-      }
-      if(verificado!==undefined){
-        fields.push(`verificado=$${fields.length+1}`)
-        values.push(verificado)
-      }
-      if(token_verificacao){
-        fields.push(`token_verificacao=$${fields.length+1}`)
-        values.push(token_verificacao)
-      }
+        if (nome) {
+            fields.push(`nome = $${fields.length + 1}`);
+            values.push(nome);
+        }
+        if (senha) {
+            fields.push(`senha = $${fields.length + 1}`);
+            values.push(senha);
+        }
+        if (email) {
+            fields.push(`email = $${fields.length + 1}`);
+            values.push(email);
+        }
+        if (cpf) {
+            fields.push(`cpf = $${fields.length + 1}`);
+            values.push(cpf);
+        }
+        if (data_aniversario) {
+            fields.push(`data_aniversario = $${fields.length + 1}`);
+            values.push(data_aniversario);
+        }
+        if (telefone) {
+            fields.push(`telefone = $${fields.length + 1}`);
+            values.push(telefone);
+        }
+        if (verificado !== undefined) {
+            fields.push(`verificado = $${fields.length + 1}`);
+            values.push(verificado);
+        }
+        if (token_verificacao) {
+            fields.push(`token_verificacao = $${fields.length + 1}`);
+            values.push(token_verificacao);
+        }
 
-      if (fields.length === 0) {
-        throw new Error("Nenhum campo para atualizar.");
-      }
+        if (fields.length === 0) {
+            throw new Error("Nenhum campo para atualizar.");
+        }
 
-      const query = `UPDATE usuario SET ${fields.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`;
-      values.push(id);
+        const query = `UPDATE usuario SET ${fields.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`;
+        values.push(id);
 
-      const result = await client.query(query, values);
-      return result.rows[0];
+        const result = await client.query(query, values);
+        return result.rows[0];
     } catch (err) {
-      console.error("❌ Erro ao atualizar usuário", err);
-      throw err;
+        console.error("❌ Erro ao atualizar usuário", err);
+        throw err;
     } finally {
-      client.release();
+        client.release();
     }
-  }
+}
+
   async updateVericationToken(id , token_verificacao) {
     const client = await pool.connect();
     try {
       const result = await client.query(`UPDATE usuario SET token_verificacao = $1 WHERE id = $2 RETURNING *`, [token_verificacao, id]);
+      console.log(token_verificacao)
       return result.rows[0];
     } catch (error) {
       console.error("❌ Erro ao atualizar token de verificação", error);
