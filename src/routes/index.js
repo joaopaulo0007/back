@@ -15,6 +15,7 @@ router.put("/usuarios/:id",config.updateUser);
 router.post("/medicos", config.addUser);
 router.get("/medicos/:id", config.getMedico);
 router.put("/medicos/:id", config.updateMedico);
+router.get("/medicos",config.getAllMedicos)
 
 // Rotas para Consulta
 router.post("/consultas", config.addConsulta);

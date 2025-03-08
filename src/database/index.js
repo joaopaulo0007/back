@@ -155,6 +155,17 @@ class UserService {
       client.release();
     }
   }
+  async getAllMedicos(){
+    const client = await pool.connect();
+    try {
+      const result = await client.query(`SELECT * FROM medico`);
+      return result.rows;
+    } catch (error) {
+      console.log("erro ao buscar medicos")
+    }finally{
+      client.release();
+    }
+  }
 
   async getConsultaById(id ) {
     const client = await pool.connect();

@@ -199,6 +199,14 @@ class config {
         }
         
     }
+    async getAllMedicos(request,response){
+        try {
+            const result=await servicos.getAllMedicos()
+            return response.status(200).json(result)
+        } catch (error) {
+            return response.status(500).json({error:"medicos não encontrados"})
+        }
+    }
     async getAllConsultas(request,response){
         try {
             const id=Number(request.params)
