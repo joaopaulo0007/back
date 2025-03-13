@@ -82,14 +82,15 @@ class UserController {
     }
     async addHistoricoExames(request, response) {
         try {
-            const { id_paciente } = request.body;
+            const { id_usuario } = request.body;
             const imagemFile = request.file;
 
             if (!imagemFile) {
                 return response.status(400).json({ error: "Nenhuma imagem foi enviada" });
             }
 
-            const result = await userService.saveHistoricoExame(id_paciente, imagemFile);
+            const imagemPath = imagemFile.path.replace(/\\/g, '/');
+            const result = await userService.saveHistoricoExame(id_usuario, imagemPath);
             return response.status(201).json(result);
         } catch (error) {
             console.error("Erro ao adicionar histórico:", error);
@@ -169,7 +170,14 @@ class UserController {
                 return response.status(404).json({ error: "Histórico não encontrado" });
             }
 
-            return response.status(200).json(result);
+            // Construir a URL completa para a imagem
+            const baseUrl = `${request.protocol}://${request.get('host')}`;
+            const imageUrl = `${baseUrl}/${result.imagem.replace(/\\/g, '/')}`;
+
+            return response.status(200).json({
+                ...result,
+                imagemUrl: imageUrl // Retorna a URL completa da imagem
+            });
         } catch (error) {
             console.error("Erro ao buscar histórico:", error);
             return response.status(500).json({ error: "Erro ao buscar histórico de exames" });

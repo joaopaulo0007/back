@@ -13,3 +13,5 @@ router.get("/historico-exames/:id", config.getHistoricoExames);
 router.get("/historico-exames/usuario/:id",config.getAllHistoricoExames)
 router.put("/historico-exames/:id", config.updateHistoricoExames);
 router.post("/verificar-token",config.verifyEmail)
+
+export default router;

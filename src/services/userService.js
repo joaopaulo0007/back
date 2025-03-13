@@ -1,7 +1,7 @@
-import { pool } from "../config/database.js";
+import { pool } from "../database/database.js";
 import medicoService from "./medicoService.js"
 import multer from 'multer';
-
+import fileFilter from "../utils/image.js";
 // Configuração do multer para armazenamento de imagens de histórico
 const storageHistorico = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -12,15 +12,7 @@ const storageHistorico = multer.diskStorage({
     }
 });
 
-// Filtro para aceitar apenas imagens
-const fileFilter = (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error('Tipo de arquivo não suportado. Apenas JPEG, JPG e PNG são permitidos.'), false);
-    }
-};
+
 
 // Upload específico para histórico de exames
 export const uploadHistorico = multer({ 
@@ -86,10 +78,10 @@ class UserService {
             client.release()
         }
       }
-      async createHistorico(id_paciente,imagem){
+      async createHistorico(id_usuario,imagem){
         const client= await pool.connect()
         try {
-            const result = await client.query(`INSERT INTO historico_exames (id_usuario,imagem) VALUES ($1,$2) RETURNING*`,[id_paciente,imagem])
+            const result = await client.query(`INSERT INTO historico_exames (id_usuario,imagem) VALUES ($1,$2) RETURNING*`,[id_usuario,imagem])
             return result.rows[0];
     
         }catch(err){
@@ -251,12 +243,13 @@ class UserService {
         const client = await pool.connect();
         try {
             // Salva o caminho da imagem no banco de dados
-            const imagemPath = imagemFile.path;
+            //const imagemPath = imagemFile.path;
+            console.log(imagemFile)
             const result = await client.query(
                 `INSERT INTO historico_exames (id_usuario, imagem) 
                  VALUES ($1, $2) 
                  RETURNING *`,
-                [id_paciente, imagemPath]
+                [id_paciente, imagemFile]
             );
 
             return result.rows[0];

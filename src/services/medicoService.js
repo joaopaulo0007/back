@@ -1,6 +1,6 @@
-import { pool } from "../config/database.js";
+import { pool } from "../database/database.js";
 import multer from "multer";
-
+import fileFilter from "../utils/image.js";
 // Configuração do multer para armazenamento de fotos dos médicos
 const storageMedico = multer.diskStorage({
     destination: function (req, file, cb) {
