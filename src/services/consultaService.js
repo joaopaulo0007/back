@@ -1,0 +1,184 @@
+import { pool } from "../database/database.js";
+
+
+class consultaService{
+    async createConsulta(id_usuario,id_medico,data,ocorreu,link_chamada){
+        const client =await pool.connect()
+        
+        try {
+            const result = await client.query(`INSERT INTO consulta (id_usuario, id_medico,data,ocorreu, link_chamada) VALUES ($1,$2,$3,$4,$5) RETURNING *`,[id_usuario,id_medico,data,ocorreu,link_chamada])
+            return result.rows[0];
+        } catch(err){
+            console.log("❌ Erro ao criar consulta", err);
+            throw err;
+        }finally{
+            client.release();
+        }
+      }
+      async createConsultaAgendada(id_paciente,id_medico,horario_inicio,horario_fim){
+        const client =await pool.connect()
+        try {
+            const result = await client.query(`INSERT INTO consultas_agendadas(id_usuario, id_medico,horario_inicio,horario_fim) VALUES ($1,$2,$3,$4) RETURNING*`,[id_paciente,id_medico,horario_inicio,horario_fim])
+            return result.rows[0];
+    
+        } catch(err){
+            console.log("❌ Erro ao criar consulta agendada", err);
+            throw err;
+        }finally{
+            client.release();
+        }
+      }
+      async getConsultaById(id ) {
+        const client = await pool.connect();
+        try {
+          const result = await client.query(`SELECT * FROM consulta WHERE id = $1`, [id]);
+          return result.rows[0];
+        } catch (err) {
+          console.error("❌ Erro ao buscar consulta", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async getConsultaAgendadaById(id ) {
+        const client = await pool.connect();
+        try {
+          const result = await client.query(`SELECT * FROM consultas_agendadas WHERE id = $1`, [id]);
+          return result.rows[0];
+        } catch (err) {
+          console.error("❌ Erro ao buscar consulta agendada", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async getHistoricoConsultasById(id ) {
+        const client = await pool.connect();
+        try {
+          const result = await client.query(`SELECT * FROM consultas WHERE id_usuario = $1`, [id]);
+          return result.rows;
+        } catch (err) {
+          console.error("❌ Erro ao buscar historico de consultas", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async updateConsulta(id , id_paciente , id_medico , data , ocorreu , link_chamada) {
+        const client = await pool.connect();
+        try {
+          const fields = [];
+          const values = [];
+    
+          if (id_paciente) {
+            fields.push(`id_usuario= $${fields.length + 1}`);
+            values.push(id_paciente);
+          }
+          if (id_medico) {
+            fields.push(`id_medico = $${fields.length + 1}`);
+            values.push(id_medico);
+          }
+          if (data) {
+            fields.push(`data = $${fields.length + 1}`);
+            values.push(data.toISO());
+          }
+          if (ocorreu !== undefined) {
+            fields.push(`ocorreu = $${fields.length + 1}`);
+            values.push(ocorreu ? 'true':  'false');
+          }
+          
+          if (link_chamada) {
+            fields.push(`link_chamada = $${fields.length + 1}`);
+            values.push(link_chamada);
+          }
+    
+          if (fields.length === 0) {
+            throw new Error("Nenhum campo para atualizar.");
+          }
+    
+          const query = `UPDATE consulta SET ${fields.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`;
+          values.push(id);
+    
+          const result = await client.query(query, values);
+          return result.rows[0];
+        } catch (err) {
+          console.error("❌ Erro ao atualizar consulta", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async updateConsultaAgendada(id , id_paciente , id_medico , horario_inicio, horario_fim ) {
+        const client = await pool.connect();
+        try {
+          const fields= [];
+          const values= [];
+    
+          if (id_paciente) {
+            fields.push(`id_usuario= $${fields.length + 1}`);
+            values.push(id_paciente);
+          }
+          if (id_medico) {
+            fields.push(`id_medico = $${fields.length + 1}`);
+            values.push(id_medico);
+          }
+          if (horario_inicio) {
+            fields.push(`data = $${fields.length + 1}`);
+            values.push(horario_inicio.toISO());
+          }
+          if(horario_fim){
+            fields.push(`data = $${fields.length + 1}`);
+            values.push(horario_fim.toISO());
+          }
+    
+          if (fields.length === 0) {
+            throw new Error("Nenhum campo para atualizar.");
+          }
+    
+          const query = `UPDATE consultas_agendadas SET ${fields.join(", ")} WHERE id = $${fields.length + 1} RETURNING *`;
+          values.push(id);
+    
+          const result = await client.query(query, values);
+          return result.rows[0];
+        } catch (err) {
+          console.error("❌ Erro ao atualizar consulta agendada", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async deleteConsulta(id ) {
+        const client = await pool.connect();
+        try {
+          await client.query(`DELETE FROM consulta WHERE id = $1`, [id]);
+          return { message :"consulta deletada com sucesso!" };
+        } catch (err) {
+          console.error("❌ Erro ao deletar consulta", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async deleteConsultaAgendada(id ) {
+        const client = await pool.connect();
+        try {
+          await client.query(`DELETE FROM consultas_agendadas WHERE id = $1`, [id]);
+          return { message: "consulta agendada deletada com sucesso!" };
+        } catch (err) {
+          console.error("❌ Erro ao deletar consulta agendada", err);
+          throw err;
+        } finally {
+          client.release();
+        }
+      }
+      async getConsultasAgendadasByMedico(id_medico){
+        const client= await pool.connect();
+        try {
+          const result= await client.query(`SELECT * FROM consultas_agendadas WHERE id_medico= $1 order by horario_inicio `,[id_medico])
+          return result.rows;
+        } catch (error) {
+           return error
+        }
+      }
+}
+export default new consultaService();
