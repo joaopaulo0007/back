@@ -141,4 +141,10 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
+#uploads
+uploads/historico-exames/*
+uploads/fotos-medicos/*
+!uploads/historico-exames/.gitkeep
+!uploads/fotos-medicos/.gitkeep
+
 # End of https://www.toptal.com/developers/gitignore/api/node
