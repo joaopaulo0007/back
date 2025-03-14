@@ -3,20 +3,23 @@ import consultaService from "../services/consultaService.js";
 import { horarioDia,horarios } from "../middlewares/horarios.js";
 class medicoController{
     async addMedico(request, response) {
-        upload.single('imagem')(request, response, async (err) => {
-            if (err) {
-                return response.status(500).json({ error: "Erro ao fazer upload da imagem" });
-            }
+        
+           
             try {
                 const { id_usuario, especializacao, crm } = request.body;
-                const imagem = request.file.buffer; // A imagem é armazenada como um buffer
+                const imagem = request.file; // A imagem é armazenada como um buffer
+                console.log(imagem)
+                if(!imagem){
+                    const result= await medicoService.createMedico(id_usuario,especializacao,crm)
+                    return response.status(201).json(result);
 
+                }
                 const result = await medicoService.createMedico(id_usuario, especializacao, crm, imagem);
                 return response.status(201).json(result);
             } catch (err) {
                 return response.status(500).json({ error: "Erro ao adicionar médico" });
             }
-        });
+        
     }
     async getMedicobyEspecializacao(request,response){
         try {
@@ -41,12 +44,18 @@ class medicoController{
     async getMedico(request, response) {
         try {
             const id = Number(request.params.id)
+            console.log(id)
         const result =await medicoService.getMedicorById(id)
+        console.log(result)
         if(result.imagem){
-            const imagemBase64=result.imagem.toString('base64')
-            result.imagem=`data:image/jpeg;base64,${imagemBase64}`
+            const baseUrl = `${request.protocol}://${request.get('host')}`;
+            const imageUrl = `${baseUrl}/${result.imagem.replace(/\\/g, '/')}`;
+             return response.status(200).json({
+            ...result, imageUrl
+        }) 
         }
-        return response.status(200).json(result) 
+        return response.status(200).json(result)
+       
         } catch (error) {
             return response.status(500).json({error:"medico não encontrado"})
         }

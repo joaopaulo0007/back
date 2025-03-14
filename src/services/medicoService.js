@@ -32,10 +32,20 @@ class medicoService{
       }
       async createMedico(id, especializacao, crm, imagem = null) {
         const client = await pool.connect();
+      
         try {
-          if (imagem && !imagem.startsWith('./uploads/fotos-medicos/')) {
+          console.log(imagem);
+          // Normaliza barras invertidas para barras normais
+          if (imagem) {
+            imagem = imagem.replace(/\\/g, '/');
+          }
+      
+          // Verifica se o caminho começa corretamente
+          if (imagem && !imagem.startsWith('uploads/fotos-medicos/')) {
+            console.log('Caminho da imagem inválido:', imagem);
             throw new Error('Caminho da imagem inválido');
           }
+      
           const result = await client.query(
             `INSERT INTO medico (id_usuario, especializacao, crm, imagem) 
              VALUES ($1, $2, $3, $4) 
@@ -50,6 +60,7 @@ class medicoService{
           client.release();
         }
       }
+      
       async createHorariomedico(id_medico,dia_semana,data_inicio,data_fim){
         const client =await pool.connect()
         try {

@@ -5,7 +5,7 @@ import consultasController from "../controllers/consultasController.js";
 import { uploadFotoMedico } from "../services/medicoService.js";
 const router = Router();
 
-router.post("/medicos", uploadFotoMedico.single('foto'), userController.addUser);
+router.post("/medicos", uploadFotoMedico.single('imagem'), userController.addUser);
 router.get("/medicos/:id", medicoController.getMedico);
 router.put("/medicos/:id", medicoController.updateMedico);
 router.get("/medicos", medicoController.getAllMedicos);
