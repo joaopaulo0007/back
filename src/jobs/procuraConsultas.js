@@ -3,6 +3,7 @@ import consultaService from "../services/consultaService.js";
 import userService from "../services/userService.js";
 import { enviarEmail } from "../utils/emailService.js";
 import medicoService from "../services/medicoService.js";
+import notificacoesServices from "../services/notificacoesServices.js";
 const verificarConsultas = async () => {
     const agora = new Date();
     const limite = new Date(agora.getTime() + 60 * 60 * 1000); // 1 hora antes
@@ -15,11 +16,12 @@ const verificarConsultas = async () => {
             if (usuario && usuario.email) {
                 const medico= await medicoService.getMedicorById(consulta.id_medico);
                 const userMedico=await userService.getUserById(medico.id_usuario);
+                const mensagem=`Olá ${usuario.nome}, sua consulta com o médico ID ${userMedico.nome} é às ${consulta.horario_inicio}.`
                 await enviarEmail(
-                    usuario.email,
-                    "Lembrete de Consulta",
-                    `Olá ${usuario.nome}, sua consulta com o médico ID ${userMedico.nome} é às ${consulta.horario_inicio}.`
+                    usuario.email,"Lembrete de Consulta",mensagem
+                    
                 );
+                await notificacoesServices.salvarNotificacao(usuario.id,mensagem);
             }
         }
     } catch (error) {
