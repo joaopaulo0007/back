@@ -15,6 +15,22 @@ class consultaService{
             client.release();
         }
       }
+      async getConsultasEntre(inicio,fim){
+        const client= await pool.connect()
+        try{
+          const result=   await client.query(
+            "SELECT * FROM consultas_agendadas WHERE horario_inicio BETWEEN $1 AND $2",
+            [inicio, fim]
+        );
+        return result.rows;
+        }catch(err){
+          return [];
+          console.log(err);
+          
+        }finally{
+          client.release();
+        }
+      }
       async createConsultaAgendada(id_paciente,id_medico,horario_inicio,horario_fim){
         const client =await pool.connect()
         try {

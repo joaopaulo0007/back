@@ -1,14 +1,14 @@
 import nodemailer from 'nodemailer';
-
+import { transporter } from './transporter.js';
 export async function sendVerificationEmail(email, token) {
-    const transporter = nodemailer.createTransport({
-        host: "sandbox.smtp.mailtrap.io",
-        port: 2525,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.MAILTRAP_PASS
-        }
-    });
+    // const transporter = nodemailer.createTransport({
+    //     host: "sandbox.smtp.mailtrap.io",
+    //     port: 2525,
+    //     auth: {
+    //         user: process.env.EMAIL_USER,
+    //         pass: process.env.MAILTRAP_PASS
+    //     }
+    // });
 
     const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -25,3 +25,9 @@ export async function sendVerificationEmail(email, token) {
         throw error;
     }
 } 
+
+export const enviarEmail = async (para, assunto, texto) => {
+    const mailOptions = { from: process.env.EMAIL_USER, to: para, subject: assunto, text: texto };
+    await transporter.sendMail(mailOptions);
+    console.log(`📩 Email enviado para ${para}`);
+};

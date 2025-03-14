@@ -1,4 +1,4 @@
-
+import { json } from "express";
 // Função para adicionar dias a uma data
 const adicionarDias = (data, dias) => {
     let novaData = new Date(data);
@@ -10,15 +10,18 @@ const adicionarDias = (data, dias) => {
 const horarioDentroIntervalo = (horario, inicio, fim) => {
     return horario >= inicio && horario < fim;
 };
-const horarioDia=(data,listaHorarios,listaHorariosAgendados)=>{
+const horarioDia=(dataInicial,listaHorarios,listaHorariosAgendados)=>{
+    
     let horariosDisponiveis = [];
-    let dataAtual = new Date(data);
+    let dataAtual = new Date(dataInicial);
     dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
     let diaSemanaAtual = dataAtual.getDay();
-    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana === diaSemanaAtual);
+    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana == diaSemanaAtual);
+    console.log(diaSemanaAtual,diasTrabalhando)
     if(diasTrabalhando.length===0){
-        return json({message:"Médico não atende neste dia"});
+        return null;
     }
+    console.log(diasTrabalhando)
     for (let dia of diasTrabalhando) {
         let dataConsulta = new Date(dataAtual);
         dataConsulta.setHours(0, 0, 0, 0);
@@ -30,6 +33,8 @@ const horarioDia=(data,listaHorarios,listaHorariosAgendados)=>{
         let fimExpediente = new Date(dataConsulta);
         fimExpediente.setHours(horaFim-3, minutoFim, 0, 0);
         let horarioAtual = new Date(inicioExpediente);
+        console.log(horarioAtual)
+        console.log(fimExpediente)
         while (horarioAtual < fimExpediente) {
             let horarioDisponivel = true;
             for (let agendamento of listaHorariosAgendados) {
@@ -48,6 +53,7 @@ const horarioDia=(data,listaHorarios,listaHorariosAgendados)=>{
             horarioAtual.setMinutes(horarioAtual.getMinutes() + 30);
         }
     }
+    console.log("horarios disponiveis",horariosDisponiveis)
     return horariosDisponiveis;
 }
 // Função para obter horários disponíveis

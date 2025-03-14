@@ -16,9 +16,9 @@ export default function configApp(app) {
     if (!fs.existsSync(uploadPath)) {
         console.error(`❌ Diretório não encontrado: ${uploadPath}`);
     } else {
-        console.log(`✅ Diretório encontrado: ${uploadPath}`);
-        console.log('📂 Subpastas:', fs.readdirSync(uploadPath));
-        console.log('📄 Arquivos em historico-exames:', fs.readdirSync(path.join(uploadPath, 'historico-exames')));
+        //console.log(`✅ Diretório encontrado: ${uploadPath}`);
+        //console.log('📂 Subpastas:', fs.readdirSync(uploadPath));
+        //console.log('📄 Arquivos em historico-exames:', fs.readdirSync(path.join(uploadPath, 'historico-exames')));
     }
     console.log('Servindo arquivos estáticos de:', path.join(__dirname, '../uploads'));
     app.use('/uploads', express.static(uploadPath));

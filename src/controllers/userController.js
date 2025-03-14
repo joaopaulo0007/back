@@ -209,27 +209,7 @@ class UserController {
           return response.status(500).json({ error: "Erro ao verificar email" });
         }
       }
-      async getHorariosDisponiveis(req,res){
-        try{
-            const data_inicial=req.body.data_inicial
-            const id_medico=Number(req.params.id)
-             if (!data_inicial) {
-               data_inicial= new Date();
-            }
-            console.log(data_inicial)
-            const horariosMedico= await medicoService.getHorarioByMedico(id_medico)
-            //console.log(horariosMedico)
-            const consultas_agendadas= await consultaService.getConsultasAgendadasByMedico(id_medico)
-            //console.log("consultas agendadas: ",consultas_agendadas)
-            const horariosDisponiveis=  horarioDia(data_inicial,horariosMedico,consultas_agendadas)
-            return res.status(200).json(horariosDisponiveis)
-        }catch(error){
-            console.log(req.body)
-            console.log(error)
 
-            return res.status(500).json({error:"erro ao buscar horarios disponiveis"})
-        }
-      }
 
 }
 
