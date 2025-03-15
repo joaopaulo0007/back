@@ -67,11 +67,15 @@ class medicoController{
             const result=await medicoService.getAllMedicos()
             const medicos=result.map(medico=>{
                 if(medico.imagem){
-                    const imagemBase64=medico.imagem.toString('base64')
-                    medico.imagem=`data:image/jpeg;base64,${imagemBase64}`
+                    const baseUrl = `${request.protocol}://${request.get('host')}`;
+                    const imageUrl = `${baseUrl}/${medico.imagem.replace(/\\/g, '/')}`;
+                    return ({
+                        ...medico,imageUrl
+                    })
                 }
                 return medico
             })
+            console.log( "status 200")
             return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:"medicos não encontrados"})
