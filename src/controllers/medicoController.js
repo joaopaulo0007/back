@@ -70,13 +70,13 @@ class medicoController{
                     const baseUrl = `${request.protocol}://${request.get('host')}`;
                     const imageUrl = `${baseUrl}/${medico.imagem.replace(/\\/g, '/')}`;
                     return ({
-                        ...medico,imageUrl
+                        ...medico,imageUrl:imageUrl
                     })
                 }
                 return medico
             })
             console.log( "status 200")
-            return response.status(200).json(result)
+            return response.status(200).json(medicos)
         } catch (error) {
             return response.status(500).json({error:"medicos não encontrados"})
         }
