@@ -75,10 +75,16 @@ class medicoService{
             client.release();
         }
       }
-      async getMedicorById(id ) {
+      async getMedicorById(id) {
         const client = await pool.connect();
         try {
-          const result = await client.query(`SELECT * FROM medico WHERE id = $1`, [id]);
+          const result = await client.query(
+            `SELECT medico.*, usuario.nome 
+             FROM medico 
+             JOIN usuario ON medico.id_usuario = usuario.id 
+             WHERE medico.id = $1`,
+            [id]
+          );
           return result.rows[0];
         } catch (err) {
           console.error("❌ Erro ao buscar médico", err);
@@ -87,17 +93,23 @@ class medicoService{
           client.release();
         }
       }
-      async getAllMedicos(){
+      
+      async getAllMedicos() {
         const client = await pool.connect();
         try {
-          const result = await client.query(`SELECT * FROM medico`);
+          const result = await client.query(
+            `SELECT medico.*, usuario.nome 
+             FROM medico 
+             JOIN usuario ON medico.id_usuario = usuario.id`
+          );
           return result.rows;
         } catch (error) {
-          console.log("erro ao buscar medicos")
-        }finally{
+          console.log("❌ Erro ao buscar médicos", error);
+        } finally {
           client.release();
         }
       }
+      
       async getHorarioByMedico(id_medico ) {
         const client = await pool.connect();
         try {

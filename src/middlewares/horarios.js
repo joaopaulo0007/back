@@ -10,71 +10,52 @@ const adicionarDias = (data, dias) => {
 const horarioDentroIntervalo = (horario, inicio, fim) => {
     return horario >= inicio && horario < fim;
 };
-const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
-    let partes = dataInicial.split("-");
-    let dataAtual = new Date(partes[0], partes[1] - 1, partes[2]); // Criando a data corretamente no fuso local
-    dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
-
-    let diaSemanaAtual = dataAtual.getDay();
-    console.log("dia da semana passado: ", diaSemanaAtual);
-
-    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana == diaSemanaAtual);
+const horarioDia=(dataInicial,listaHorarios,listaHorariosAgendados)=>{
     
-    if (diasTrabalhando.length === 0) {
+    let horariosDisponiveis = [];
+    let dataAtual = new Date(dataInicial);
+    dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
+    let diaSemanaAtual = dataAtual.getDay();
+    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana == diaSemanaAtual);
+    console.log(diaSemanaAtual,diasTrabalhando)
+    if(diasTrabalhando.length===0){
         return null;
     }
-
-    console.log("Data Inicial:", dataInicial);
-    console.log("Data Atual Ajustada:", dataAtual);
-    console.log("Dias Trabalhando:", diasTrabalhando[0]);
-
-    let horariosDisponiveis = [];
-
+    console.log(diasTrabalhando)
     for (let dia of diasTrabalhando) {
         let dataConsulta = new Date(dataAtual);
         dataConsulta.setHours(0, 0, 0, 0);
-
+        // Converte os horários do banco (string) para números
         let [horaInicio, minutoInicio] = dia.horario_inicio.split(":").map(Number);
         let [horaFim, minutoFim] = dia.horario_fim.split(":").map(Number);
-
         let inicioExpediente = new Date(dataConsulta);
-        inicioExpediente.setUTCHours(horaInicio, minutoInicio, 0, 0); // Alterado para `setHours`
-
+        inicioExpediente.setHours(horaInicio-3, minutoInicio, 0, 0);
         let fimExpediente = new Date(dataConsulta);
-        fimExpediente.setUTCHours(horaFim, minutoFim, 0, 0); // Alterado para `setHours`
-
+        fimExpediente.setHours(horaFim-3, minutoFim, 0, 0);
         let horarioAtual = new Date(inicioExpediente);
-
-        console.log("Inicio expediente:", inicioExpediente);
-        console.log("Fim expediente:", fimExpediente);
-
+        console.log(horarioAtual)
+        console.log(fimExpediente)
         while (horarioAtual < fimExpediente) {
             let horarioDisponivel = true;
-
             for (let agendamento of listaHorariosAgendados) {
                 let inicioAgendamento = new Date(agendamento.horario_inicio);
                 let fimAgendamento = new Date(agendamento.horario_fim);
-
-                inicioAgendamento.setUTCHours(inicioAgendamento.getHours(), inicioAgendamento.getMinutes(), 0, 0);
-                fimAgendamento.setUTCHours(fimAgendamento.getHours(), fimAgendamento.getMinutes(), 0, 0);
-
+                inicioAgendamento.setHours(inicioAgendamento.getHours() - 3, inicioAgendamento.getMinutes(), 0, 0);
+                fimAgendamento.setHours(fimAgendamento.getHours() - 3, fimAgendamento.getMinutes(), 0, 0);
                 if (horarioDentroIntervalo(horarioAtual, inicioAgendamento, fimAgendamento)) {
                     horarioDisponivel = false;
                     break;
                 }
             }
-
             if (horarioDisponivel) {
                 horariosDisponiveis.push(new Date(horarioAtual));
             }
-
             horarioAtual.setMinutes(horarioAtual.getMinutes() + 30);
         }
     }
-
-    console.log("Horários disponíveis:", horariosDisponiveis);
+    console.log("horarios disponiveis",horariosDisponiveis)
     return horariosDisponiveis;
-};
+}
 // Função para obter horários disponíveis
 const horarios = (dataInicial, listaHorarios, listaHorariosAgendados) => {
     let horariosDisponiveis = [];
