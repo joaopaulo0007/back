@@ -1,7 +1,6 @@
 import userService from "../services/userService.js";
 import medicoService from "../services/medicoService.js";
 import consultaService from "../services/consultaService.js";
-import  { horarioDia } from "../middlewares/horarios.js";
 import { hashSenha, verificarSenha } from "../auth/index.js";
 import { sendVerificationEmail } from "../utils/emailService.js";
 import jwt from "jsonwebtoken";
@@ -13,6 +12,7 @@ class UserController {
     async Login(request,response){
         try{
             const{email,senha}=request.body
+            console.log(email, senha)
             const user= await userService.getuserByEmail(email)
             if(!user){
                 return response.status(404).json({ message: "Usuário não encontrado" });
@@ -24,7 +24,12 @@ class UserController {
             if (!senhaValida) {
                 return response.status(401).json({message:"senha incorreta"})
             }
-            return response.status(200).json({ message:"logim bem sucedido"})
+            const medico= await medicoService.getMedicoByIdUser(user.id)
+            console.log(medico)
+            if (medico) {
+                return response.status(200).json(medico)
+            }
+            return response.status(200).json(user)
         }catch(error){
           console.log(error)
           return response.status(500).json({error:" erro ao realizar o login"})

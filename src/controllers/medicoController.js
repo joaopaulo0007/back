@@ -85,6 +85,7 @@ class medicoController{
         try {
             const id = Number(request.params.id)
         const result =await medicoService.getHorarioByMedico(id)
+        console.log(result)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:"horario não encontrado"})
@@ -133,30 +134,43 @@ class medicoController{
         }
        
     }
-    async getHorariosDisponiveis(req,res){
+    async getMedicoUserID(req,res){
         try{
-            let data_inicial=req.body.data_inicial
-            const id_medico=Number(req.params.id)
-             if (!data_inicial) {
-               data_inicial= new Date();
-            }
-            console.log(data_inicial)
-            const horariosMedico= await medicoService.getHorarioByMedico(id_medico)
-            //console.log(horariosMedico)
-            const consultas_agendadas= await consultaService.getConsultasAgendadasByMedico(id_medico)
-            //console.log("consultas agendadas: ",consultas_agendadas)
-            const horariosDisponiveis=   horarioDia(data_inicial,horariosMedico,consultas_agendadas)
-            if(!horariosDisponiveis || horariosDisponiveis.length === 0){
-                return res.status(200).json({message:"não há horários disponíveis nesse dia"})
-            }
-            console.log(horariosDisponiveis)
-            return res.status(200).json(horariosDisponiveis)
+            const id = Number(req.params.id);
+            const result = await medicoService.getMedicoByIdUser(id);
+            return res.status(200).json(result);
         }catch(error){
-            console.log(req.body)
-            console.log(error)
-
-            return res.status(500).json({error:"erro ao buscar horarios disponiveis"})
+            return res.status(500).json({error:"erro ao buscar medico"})
         }
-      }
+    }
+    async getHorariosDisponiveis(req, res) {
+        try {
+            let data_inicial = req.query.data_inicial; // agora vem da query string
+            const id_medico = Number(req.params.id);
+    
+            if (!data_inicial) {
+                data_inicial = new Date();
+            } else {
+                data_inicial = new Date(data_inicial); // converte string para Date se necessário
+            }
+    
+            console.log("Data recebida: ", data_inicial);
+    
+            const horariosMedico = await medicoService.getHorarioByMedico(id_medico);
+            const consultas_agendadas = await consultaService.getConsultasAgendadasByMedico(id_medico);
+    
+            const horariosDisponiveis = horarioDia(data_inicial, horariosMedico, consultas_agendadas);
+            if (!horariosDisponiveis || horariosDisponiveis.length === 0) {
+                return res.status(200).json({ message: "não há horários disponíveis nesse dia" });
+            }
+           
+            return res.status(200).json(horariosDisponiveis);
+        } catch (error) {
+            console.log(req.query);
+            console.log(error);
+            return res.status(500).json({ error: "erro ao buscar horarios disponiveis" });
+        }
+    }
+    
 }
 export default new medicoController();

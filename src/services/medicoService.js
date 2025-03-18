@@ -27,7 +27,10 @@ class medicoService{
           const result= await client.query(`SELECT * FROM medico WHERE especializacao=$1`,[especializacao])
           return result.rows;
         } catch (error) {
-          return error
+          console.error("❌ Erro ao buscar médico por especialização:", error);
+          throw error;
+        } finally {
+          client.release();
         }
       }
       async createMedico(id, especializacao, crm, imagem = null) {
@@ -93,7 +96,18 @@ class medicoService{
           client.release();
         }
       }
-      
+      async getMedicoByIdUser(id){
+        const client= await pool.connect()
+        try {
+          const result= await client.query(`SELECT * FROM medico WHERE id_usuario=$1`,[id])
+          return result.rows[0]
+        } catch (error) {
+          console.error("❌ Erro ao buscar médico", error);
+        }finally{
+          client.release()
+        }
+      }
+
       async getAllMedicos() {
         const client = await pool.connect();
         try {

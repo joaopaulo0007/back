@@ -9,6 +9,7 @@ router.post("/medicos", uploadFotoMedico.single('imagem'), userController.addUse
 router.get("/medicos/:id", medicoController.getMedico);
 router.put("/medicos/:id", medicoController.updateMedico);
 router.get("/medicos", medicoController.getAllMedicos);
+router.get("/medicos/user/:id",medicoController.getMedicoUserID)
 router.get("/medicos/especializacao/:especializacao", medicoController.getMedicobyEspecializacao);
 router.get("/medicos/horarios/:id", medicoController.getHorariosDisponiveis);
 router.get("/medicos/consultas/:id", consultasController.getConsultaAgendadaByMedico);
