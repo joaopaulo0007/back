@@ -158,7 +158,7 @@ class medicoController{
     
             const horariosMedico = await medicoService.getHorarioByMedico(id_medico);
             const consultas_agendadas = await consultaService.getConsultasAgendadasByMedico(id_medico);
-    
+            console.log(" consultas agendadas com o médico: ", consultas_agendadas)
             const horariosDisponiveis = horarioDia(data_inicial, horariosMedico, consultas_agendadas);
             if (!horariosDisponiveis || horariosDisponiveis.length === 0) {
                 return res.status(200).json({ message: "não há horários disponíveis nesse dia" });

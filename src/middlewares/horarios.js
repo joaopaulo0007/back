@@ -11,13 +11,12 @@ const horarioDentroIntervalo = (horario, inicio, fim) => {
     return horario >= inicio && horario < fim;
 };
 const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
-    let partes = dataInicial.split("-");
-    let dataAtual = new Date(partes[0], partes[1] - 1, partes[2]); // Criando a data corretamente no fuso local
+    let dataAtual= new Date(dataInicial)
     dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
 
     let diaSemanaAtual = dataAtual.getDay();
     console.log("dia da semana passado: ", diaSemanaAtual);
-
+    
     let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana == diaSemanaAtual);
     
     if (diasTrabalhando.length === 0) {
@@ -27,7 +26,7 @@ const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
     console.log("Data Inicial:", dataInicial);
     console.log("Data Atual Ajustada:", dataAtual);
     console.log("Dias Trabalhando:", diasTrabalhando[0]);
-
+    console.log("lista dos horarios agendados: ", listaHorariosAgendados)
     let horariosDisponiveis = [];
 
     for (let dia of diasTrabalhando) {
