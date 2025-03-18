@@ -1,8 +1,8 @@
 import { pool } from "../database/database.js";
-const users = new Map();
+import { enviarNotificacaoSocket } from "./socketService.js";
 
-class notificacaoService{
-     async salvarNotificacao(userId, mensagem)  {
+class NotificacaoService {
+    async salvarNotificacao(userId, mensagem, dados = null) {
         const client = await pool.connect();
         try {
             await client.query(
@@ -10,40 +10,72 @@ class notificacaoService{
                 [userId, mensagem]
             );
     
-            // Se o usuário estiver online, enviar via WebSocket
-            const socketId = users.get(userId);
-            if (socketId) {
-                io.to(socketId).emit("alertaConsulta", mensagem);
-            }
+            // Preparar dados para envio via Socket.IO
+            const notificacaoDados = dados || {
+                tipo: 'notificacao_geral',
+                mensagem: mensagem,
+                timestamp: new Date()
+            };
+            
+            // Enviar notificação via Socket.IO
+            enviarNotificacaoSocket(userId, notificacaoDados);
+            
+            return true;
         } catch (err) {
             console.error("Erro ao salvar notificação:", err);
+            return false;
         } finally {
             client.release();
         }
-    };
-    async getNotificacao(id_usuario){
-        const client=await pool.connect()
+    }
+    
+    async getNotificacoes(id_usuario) {
+        const client = await pool.connect();
         try {
             const result = await client.query(
-                "SELECT id, mensagem FROM notificacoes WHERE id_usuario = $1 AND lida = FALSE",
+                "SELECT id, mensagem, created_at FROM notificacoes WHERE id_usuario = $1 AND lida = FALSE ORDER BY created_at DESC",
                 [id_usuario]
             );
             return result.rows;
         } catch (err) {
-            console.error("falha ao obter notificações",err)
-        }finally{
-             client.release();
+            console.error("Falha ao obter notificações", err);
+            return [];
+        } finally {
+            client.release();
         }
     }
-    async updateNotificacao(id){
-        const client=await  pool.connect()
+    
+    async marcarComoLida(id) {
+        const client = await pool.connect();
         try {
-            const result=await client.query("UPDATE notificacoes SET lida = TRUE WHERE id = $1", [id]);
+            await client.query(
+                "UPDATE notificacoes SET lida = TRUE WHERE id = $1", 
+                [id]
+            );
+            return true;
         } catch (error) {
-            console.error("erro ao atualizar notificação", error)
-        }finally{
+            console.error("Erro ao atualizar notificação", error);
+            return false;
+        } finally {
+            client.release();
+        }
+    }
+    
+    async marcarTodasComoLidas(id_usuario) {
+        const client = await pool.connect();
+        try {
+            await client.query(
+                "UPDATE notificacoes SET lida = TRUE WHERE id_usuario = $1 AND lida = FALSE", 
+                [id_usuario]
+            );
+            return true;
+        } catch (error) {
+            console.error("Erro ao atualizar notificações", error);
+            return false;
+        } finally {
             client.release();
         }
     }
 }
-export default new notificacaoService()
+
+export default new NotificacaoService();

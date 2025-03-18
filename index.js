@@ -1,9 +1,9 @@
 import express from "express";
+import http from "http";
 import configApp from "./src/config/index.js";
 import initScheduler from "./src/jobs/procuraConsultas.js";
 import { timeout } from './src/middlewares/timeout.js';
-import http from "http"
-import { Server } from "socket.io";
+import { initSocketService } from "./src/services/socketService.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -25,8 +25,16 @@ process.on('SIGTERM', () => {
     });
 });
 
-configApp(app)
+// Configurar o servidor
+configApp(app);
+
+// Inicializar Socket.IO
+initSocketService(server);
+
+// Inicializar o scheduler de consultas
 initScheduler();
+
+// Configurar middleware de timeout
 app.use(timeout(30000)); // 30 segundos de timeout
 
 const PORT = process.env.PORT || 3000;
@@ -34,8 +42,6 @@ let attempts = 0;
 const MAX_ATTEMPTS = 5;
 
 function startServer(port) {
-    const server = http.createServer(app);
-    
     server.listen(port)
         .on('listening', () => {
             console.log(`Servidor rodando na porta ${port}`);
