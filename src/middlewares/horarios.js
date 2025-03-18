@@ -12,7 +12,7 @@ const horarioDentroIntervalo = (horario, inicio, fim) => {
 };
 const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
     let dataAtual= new Date(dataInicial)
-    dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
+    dataAtual.setUTCHours(0, 0, 0, 0); // Normaliza para início do dia
 
     let diaSemanaAtual = dataAtual.getDay();
     console.log("dia da semana passado: ", diaSemanaAtual);
@@ -31,7 +31,7 @@ const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
 
     for (let dia of diasTrabalhando) {
         let dataConsulta = new Date(dataAtual);
-        dataConsulta.setHours(0, 0, 0, 0);
+        dataConsulta.setUTCHours(0, 0, 0, 0);
 
         let [horaInicio, minutoInicio] = dia.horario_inicio.split(":").map(Number);
         let [horaFim, minutoFim] = dia.horario_fim.split(":").map(Number);
