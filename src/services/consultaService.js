@@ -196,5 +196,31 @@ class consultaService{
            return error
         }
       }
+      async updateConsultaTokens(id, rtcToken, rtmToken) {
+        const client = await pool.connect();
+        try {
+          await client.query(
+            "UPDATE consultas_agendadas SET rtc_token = $1, rtm_token = $2 WHERE id = $3",
+            [rtcToken, rtmToken, id]
+          );
+        } catch (err) {
+          console.error("Erro ao atualizar tokens da consulta:", err);
+        } finally {
+          client.release();
+        }
+      }
+      async marcarComoNotificado(id) {
+        const client = await pool.connect();
+        try {
+          await client.query(
+            "UPDATE consultas_agendadas SET notificado = TRUE WHERE id = $1",
+            [id]
+          );
+        } catch (err) {
+          console.error("Erro ao marcar consulta como notificada:", err);
+        } finally {
+          client.release();
+        }
+      }
 }
 export default new consultaService();
