@@ -16,4 +16,5 @@ router.get("/medicos/consultas/:id", consultasController.getConsultaAgendadaByMe
 router.post("/horarios-medicos", medicoController.addHorarioMedico);
 router.get("/horarios-medicos/:id", medicoController.getHorario);
 router.put("/horarios-medicos/:id", medicoController.updateHorarioMedico);
+router.put("/medicos/editarPerfil/:id",uploadFotoMedico.single('imagem'), medicoController.updateImagemNomeSenha)
 export default router; 

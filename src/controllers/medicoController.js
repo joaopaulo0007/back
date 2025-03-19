@@ -142,8 +142,16 @@ class medicoController{
         try{
             const id = Number(req.params.id);
             const result = await medicoService.getMedicoByIdUser(id);
+            if(result.imagem){
+                const baseUrl = `${req.protocol}://${req.get('host')}`;
+                const imageUrl = `${baseUrl}/${result.imagem.replace(/\\/g, '/')}`;
+                return (res.status(200).json({
+                    ...result,imageUrl:imageUrl
+                }))
+            }
             return res.status(200).json(result);
         }catch(error){
+            console.log(error)
             return res.status(500).json({error:"erro ao buscar medico"})
         }
     }
@@ -173,6 +181,20 @@ class medicoController{
             console.log(req.query);
             console.log(error);
             return res.status(500).json({ error: "erro ao buscar horarios disponiveis" });
+        }
+    }
+    async updateImagemNomeSenha(req,res){
+        try{
+            const {id} = req.params;
+            const {nome,senha} = req.body;
+            const imagem = req.file;
+            console.log(imagem)
+            console.log(nome)
+            const result = await medicoService.updateFotoNomeSenhamedico(id,imagem,nome,senha);
+            return res.status(200).json(result);
+        }catch(error){
+            console.log(error);
+            return res.status(500).json({error:"erro ao atualizar medico"})
         }
     }
     

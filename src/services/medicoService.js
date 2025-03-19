@@ -1,6 +1,12 @@
 import { pool } from "../database/database.js";
+import { hashSenha } from "../auth/index.js";
 import multer from "multer";
 import fileFilter from "../utils/image.js";
+import { fileURLToPath } from 'url';
+import path,{ dirname } from 'path';
+import fs from 'fs';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // Configuração do multer para armazenamento de fotos dos médicos
 const storageMedico = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -99,7 +105,13 @@ class medicoService{
       async getMedicoByIdUser(id){
         const client= await pool.connect()
         try {
-          const result= await client.query(`SELECT * FROM medico WHERE id_usuario=$1`,[id])
+          const result = await client.query(
+            `SELECT medico.*, usuario.nome 
+             FROM usuario 
+             JOIN medico ON  usuario.id=  medico.id_usuario
+             WHERE usuario.id = $1`,
+            [id]
+          );
           return result.rows[0]
         } catch (error) {
           console.error("❌ Erro ao buscar médico", error);
@@ -107,6 +119,68 @@ class medicoService{
           client.release()
         }
       }
+      async updateFotoNomeSenhamedico(id, imagem, nome, senha) {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // Atualizar a tabela usuario
+            const fieldsUsuario = [];
+            const valuesUsuario = [];
+            if (nome) {
+                fieldsUsuario.push(`nome = $${fieldsUsuario.length + 1}`);
+                valuesUsuario.push(nome);
+            }
+            if (senha) {
+                const hash = await hashSenha(senha);
+                fieldsUsuario.push(`senha = $${fieldsUsuario.length + 1}`);
+                valuesUsuario.push(hash);
+            }
+
+            if (fieldsUsuario.length > 0) {
+                const medicoRes = await client.query('SELECT id_usuario FROM medico WHERE id = $1', [id]);
+                const idUsuario = medicoRes.rows[0]?.id_usuario;
+
+                if (!idUsuario) {
+                    throw new Error('Usuário não encontrado para este médico.');
+                }
+
+                const queryUsuario = `UPDATE usuario SET ${fieldsUsuario.join(", ")} WHERE id = $${fieldsUsuario.length + 1}`;
+                valuesUsuario.push(idUsuario);
+                await client.query(queryUsuario, valuesUsuario);
+            }
+
+            // Atualizar a tabela medicos (apenas imagem)
+            if (imagem) {
+                const filename = imagem.filename;
+                const novaImagemPath = `uploads/fotos-medicos/${filename}`;
+                const result = await client.query(`SELECT imagem FROM medico WHERE id = $1`, [id]);
+                const imagemAntiga = result.rows[0]?.imagem;
+                if (imagemAntiga) {
+                    const imagemAntigaPath = path.join(__dirname, '../../uploads/fotos-medicos', path.basename(imagemAntiga));
+                    if (fs.existsSync(imagemAntigaPath)) {
+                        fs.unlinkSync(imagemAntigaPath);
+                    }
+                }
+                await client.query(`UPDATE medico SET imagem = $1 WHERE id = $2`, [novaImagemPath, id]);
+            }
+
+            await client.query('COMMIT');
+            if (imagem) {
+             
+              const novaImagemPath = `http://localhost:3000/uploads/fotos-medicos/${imagem.filename}`;
+                return { success: true, imagem: novaImagemPath };
+            }
+            return { success: true };
+        } catch (error) {
+            await client.query('ROLLBACK');
+            console.log("❌ Erro ao atualizar médico", error);
+            throw error;
+        } finally {
+            client.release();
+        }
+    }
+    
 
       async getAllMedicos() {
         const client = await pool.connect();
@@ -239,4 +313,4 @@ class medicoService{
         }
       }
 }
-export default new medicoService(); 
+export default new medicoService();
