@@ -5,7 +5,7 @@
     "main": "index.js",
     "scripts": {
         "prestart": "node scripts/kill-port.js",
-        "start": "node index.js"
+        "start": "nodemon --watch src --watch index.js index.js"
     },
     "keywords": [],
     "author": "",

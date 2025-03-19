@@ -188,12 +188,12 @@ class medicoService{
           if (horario_inicio) {
             fields.push(`horario_inicio = $${fields.length + 1}`);
             console.log(horario_inicio)
-            values.push(data_inicio.toISO());
+            values.push(horario_inicio);
           }
           if (horario_fim) {
             fields.push(`horario_fim = $${fields.length + 1}`);
             console.log(horario_fim)
-            values.push(data_fim.toISO());
+            values.push(horario_fim);
           }
     
           if (fields.length === 0) {
