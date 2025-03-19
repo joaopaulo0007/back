@@ -33,6 +33,7 @@ class medicoController{
     async addHorarioMedico(request, response) {
         try {
             const { id_medico, dia_semana, horario_inicio, horario_fim } = request.body
+            console.log(request.body)
         const result =await medicoService.createHorariomedico(id_medico, dia_semana, horario_inicio, horario_fim)
         return response.status(201).json(result)
 
@@ -85,7 +86,7 @@ class medicoController{
         try {
             const id = Number(request.params.id)
         const result =await medicoService.getHorarioByMedico(id)
-        console.log(result)
+       // console.log(result)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:"horario não encontrado"})
@@ -106,8 +107,11 @@ class medicoController{
     async updateHorarioMedico(request, response) {
         try {
             const id = Number(request.params.id)
-        const { id_medico, dia_semana, data_inicio, data_fim } = request.body
-        const result =await medicoService.updateHorarioMedico(id, id_medico, dia_semana, data_inicio, data_fim)
+            
+        const { id_medico, dia_semana, horario_inicio, horario_fim } = request.body
+        console.log(horario_inicio)
+        console.log(horario_fim)
+        const result =await medicoService.updateHorarioMedico(id, id_medico, dia_semana, horario_inicio, horario_fim)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:" erro ao atualizar horario do medico"})

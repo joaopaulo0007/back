@@ -64,10 +64,10 @@ class medicoService{
         }
       }
       
-      async createHorariomedico(id_medico,dia_semana,data_inicio,data_fim){
+      async createHorariomedico(id_medico,dia_semana,horario_inicio,horario_fim){
         const client =await pool.connect()
         try {
-            const result=await client.query(`INSERT INTO horario_medico(id_medico,dia_semana,horario_inicio,horario_fim) VALUES($1,$2,$3,$4) RETURNING*`,[id_medico,dia_semana,data_inicio,data_fim])
+            const result=await client.query(`INSERT INTO horario_medico(id_medico,dia_semana,horario_inicio,horario_fim) VALUES($1,$2,$3,$4) RETURNING*`,[id_medico,dia_semana,horario_inicio,horario_fim])
             return result.rows[0];
     
         } catch(err){
@@ -171,7 +171,7 @@ class medicoService{
           client.release();
         }
       }
-      async updateHorarioMedico(id , id_medico , dia_semana, data_inicio, data_fim) {
+      async updateHorarioMedico(id, id_medico, dia_semana, horario_inicio, horario_fim) {
         const client = await pool.connect();
         try {
           const fields = [];
@@ -185,12 +185,14 @@ class medicoService{
             fields.push(`dia_semana = $${fields.length + 1}`);
             values.push(dia_semana);
           }
-          if (data_inicio) {
-            fields.push(`data_inicio = $${fields.length + 1}`);
+          if (horario_inicio) {
+            fields.push(`horario_inicio = $${fields.length + 1}`);
+            console.log(horario_inicio)
             values.push(data_inicio.toISO());
           }
-          if (data_fim) {
-            fields.push(`data_fim = $${fields.length + 1}`);
+          if (horario_fim) {
+            fields.push(`horario_fim = $${fields.length + 1}`);
+            console.log(horario_fim)
             values.push(data_fim.toISO());
           }
     
@@ -204,6 +206,8 @@ class medicoService{
           const result = await client.query(query, values);
           return result.rows[0];
         } catch (err) {
+          console.log(horario_inicio)
+          console.log(horario_fim)
           console.error("❌ Erro ao atualizar horário médico", err);
           throw err;
         } finally {
