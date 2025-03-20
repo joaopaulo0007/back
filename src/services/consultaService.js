@@ -56,18 +56,38 @@ class consultaService{
           client.release();
         }
       }
-      async getConsultaAgendadaById(id ) {
+      async getConsultaAgendadaById(id) {
         const client = await pool.connect();
         try {
-          const result = await client.query(`SELECT * FROM consultas_agendadas WHERE id = $1`, [id]);
-          return result.rows[0];
+            const result = await client.query(`
+                SELECT 
+                    c.id,
+                    c.id_medico,
+                    c.id_usuario,
+                    c.horario_inicio,
+                    c.horario_fim,
+                    c.rtc_token,
+                    c.rtm_token,
+                    c.notificado,
+                    u.nome AS nome_usuario,
+                    um.nome AS nome_medico,
+                    m.imagem AS foto_medico
+                FROM consultas_agendadas c
+                JOIN usuario u ON u.id = c.id_usuario
+                JOIN medico m ON m.id = c.id_medico
+                JOIN usuario um ON um.id = m.id_usuario
+                WHERE c.id = $1
+            `, [id]);
+            return result.rows[0];
         } catch (err) {
-          console.error("❌ Erro ao buscar consulta agendada", err);
-          throw err;
+            console.error("❌ Erro ao buscar consulta agendada", err);
+            throw err;
         } finally {
-          client.release();
+            client.release();
         }
-      }
+    }
+    
+    
       async getHistoricoConsultasById(id ) {
         const client = await pool.connect();
         try {
