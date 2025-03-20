@@ -190,18 +190,18 @@ class consultaService{
       async getConsultasAgendadasByMedico(id_medico){
         const client= await pool.connect();
         try {
-          const result= await client.query(`SELECT * FROM consultas_agendadas WHERE id_medico= $1 order by horario_inicio `,[id_medico])
+          const result= await client.query(`SELECT  consultas_agendadas.*, usuario.nome, usuario.cpf FROM consultas_agendadas JOIN usuario ON consultas_agendadas.id_usuario = usuario.id WHERE consultas_agendadas.id_medico= $1 order by horario_inicio `,[id_medico])
           return result.rows;
         } catch (error) {
            return error
         }
       }
-      async updateConsultaTokens(id, rtcToken, rtmToken) {
+      async updateConsultaTokens(id, rtcToken) {
         const client = await pool.connect();
         try {
           await client.query(
-            "UPDATE consultas_agendadas SET rtc_token = $1, rtm_token = $2 WHERE id = $3",
-            [rtcToken, rtmToken, id]
+            "UPDATE consultas_agendadas SET rtc_token = $1WHERE id = $3",
+            [rtcToken, id]
           );
         } catch (err) {
           console.error("Erro ao atualizar tokens da consulta:", err);

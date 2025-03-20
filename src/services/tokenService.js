@@ -8,7 +8,7 @@ dotenv.config();
 const APP_ID = process.env.APP_ID;
 const APP_CERTIFICATE = process.env.APP_CERTIFICATE;
 
-export const generateTokensForConsulta = (channelName, uid, role, expireTime = 3600) => {
+export const generateTokensForConsulta =async (channelName, uid, role, expireTime = 3600) => {
     // const currentTime = Math.floor(Date.now() / 1000);
     // const privilegeExpireTime = currentTime + expireTime;
 
@@ -28,7 +28,6 @@ export const generateTokensForConsulta = (channelName, uid, role, expireTime = 3
     //     RtmRole.Rtm_User,
     //     privilegeExpireTime
     // );
-    axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}=`)
-
-    return { rtcToken, rtmToken };
+    const token= await axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}=`)
+    return token.data;
 }; 

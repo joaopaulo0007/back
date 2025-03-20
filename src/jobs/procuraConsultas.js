@@ -27,17 +27,16 @@ const verificarConsultas = async () => {
                     await enviarEmail(usuario.email, "Lembrete de Consulta", mensagem); 
  
                     const channelName = `consulta_${consulta.id}`; 
-                    const roleMedico = RtcRole.PUBLISHER; 
-                    const rolePaciente = RtcRole.SUBSCRIBER; 
+                    const role = "medico"; 
+                    
  
                     // Verificar se os tokens já existem 
-                    let tokensMedico = consulta.rtc_token; 
-                    let tokensPaciente = consulta.rtm_token; 
+                    let tokens = consulta.rtc_token; 
+                     
  
-                    if (!tokensMedico || !tokensPaciente) { 
+                    if (!tokens) { 
                         // Gerar tokens para médico e paciente 
-                        tokensMedico = generateTokensForConsulta(channelName, consulta.id_medico, roleMedico); 
-                        tokensPaciente = generateTokensForConsulta(channelName, consulta.id_usuario, rolePaciente); 
+                        tokens = generateTokensForConsulta(channelName, consulta.id_medico, role,3600); 
  
                         // Atualizar a consulta com os novos tokens 
                         await consultaService.updateConsultaTokens(consulta.id, tokensMedico.rtcToken, tokensPaciente.rtmToken); 
