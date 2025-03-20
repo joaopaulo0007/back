@@ -1,4 +1,4 @@
-
+import { json } from "express";
 // Função para adicionar dias a uma data
 const adicionarDias = (data, dias) => {
     let novaData = new Date(data);
@@ -10,46 +10,71 @@ const adicionarDias = (data, dias) => {
 const horarioDentroIntervalo = (horario, inicio, fim) => {
     return horario >= inicio && horario < fim;
 };
-const horarioDia=(data,listaHorarios,listaHorariosAgendados)=>{
-    let horariosDisponiveis = [];
-    let dataAtual = new Date(data);
-    dataAtual.setHours(0, 0, 0, 0); // Normaliza para início do dia
+const horarioDia = (dataInicial, listaHorarios, listaHorariosAgendados) => {
+    let dataAtual= new Date(dataInicial)
+    dataAtual.setUTCHours(0, 0, 0, 0); // Normaliza para início do dia
+
     let diaSemanaAtual = dataAtual.getDay();
-    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana === diaSemanaAtual);
-    if(diasTrabalhando.length===0){
-        return json({message:"Médico não atende neste dia"});
+    console.log("dia da semana passado: ", diaSemanaAtual);
+    
+    let diasTrabalhando = listaHorarios.filter(horario => horario.dia_semana == diaSemanaAtual);
+    
+    if (diasTrabalhando.length === 0) {
+        return null;
     }
+
+    console.log("Data Inicial:", dataInicial);
+    console.log("Data Atual Ajustada:", dataAtual);
+    console.log("Dias Trabalhando:", diasTrabalhando[0]);
+    console.log("lista dos horarios agendados: ", listaHorariosAgendados)
+    let horariosDisponiveis = [];
+
     for (let dia of diasTrabalhando) {
         let dataConsulta = new Date(dataAtual);
-        dataConsulta.setHours(0, 0, 0, 0);
-        // Converte os horários do banco (string) para números
+        dataConsulta.setUTCHours(0, 0, 0, 0);
+
         let [horaInicio, minutoInicio] = dia.horario_inicio.split(":").map(Number);
         let [horaFim, minutoFim] = dia.horario_fim.split(":").map(Number);
+
         let inicioExpediente = new Date(dataConsulta);
-        inicioExpediente.setHours(horaInicio-3, minutoInicio, 0, 0);
+        inicioExpediente.setUTCHours(horaInicio, minutoInicio, 0, 0); // Alterado para `setHours`
+
         let fimExpediente = new Date(dataConsulta);
-        fimExpediente.setHours(horaFim-3, minutoFim, 0, 0);
+        fimExpediente.setUTCHours(horaFim, minutoFim, 0, 0); // Alterado para `setHours`
+
         let horarioAtual = new Date(inicioExpediente);
+
+        console.log("Inicio expediente:", inicioExpediente);
+        console.log("Fim expediente:", fimExpediente);
+
         while (horarioAtual < fimExpediente) {
             let horarioDisponivel = true;
+
             for (let agendamento of listaHorariosAgendados) {
                 let inicioAgendamento = new Date(agendamento.horario_inicio);
                 let fimAgendamento = new Date(agendamento.horario_fim);
-                inicioAgendamento.setHours(inicioAgendamento.getHours() - 3, inicioAgendamento.getMinutes(), 0, 0);
-                fimAgendamento.setHours(fimAgendamento.getHours() - 3, fimAgendamento.getMinutes(), 0, 0);
+
+                inicioAgendamento.setUTCHours(inicioAgendamento.getHours(), inicioAgendamento.getMinutes(), 0, 0);
+                fimAgendamento.setUTCHours(fimAgendamento.getHours(), fimAgendamento.getMinutes(), 0, 0);
+
                 if (horarioDentroIntervalo(horarioAtual, inicioAgendamento, fimAgendamento)) {
                     horarioDisponivel = false;
                     break;
                 }
             }
+
             if (horarioDisponivel) {
                 horariosDisponiveis.push(new Date(horarioAtual));
             }
+
             horarioAtual.setMinutes(horarioAtual.getMinutes() + 30);
         }
     }
+
+    console.log("Horários disponíveis:", horariosDisponiveis);
     return horariosDisponiveis;
-}
+};
+
 // Função para obter horários disponíveis
 const horarios = (dataInicial, listaHorarios, listaHorariosAgendados) => {
     let horariosDisponiveis = [];
