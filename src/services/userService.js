@@ -25,7 +25,8 @@ export const uploadHistorico = multer({
 
 class UserService {
     async createUser(nome, senha, email, cpf, data_aniversario, telefone, especializacao, crm, verificado, token_verificacao,imagem) {
-       
+       console.log(senha)
+       console.log( typeof senha)
         const client = await pool.connect();
         try {
           const result = await client.query(

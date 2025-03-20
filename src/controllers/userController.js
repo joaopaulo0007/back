@@ -48,11 +48,11 @@ class UserController {
                 telefone, 
                 crm 
             } = request.body;
-            
+            console.log(request.body)
             // Pega a foto se existir
             const fotoMedico = request.file ? request.file.path : null;
             
-            const hash = await hashSenha(String(senha));
+            const hash =  String( await  hashSenha(String(senha)));
             const codigo_verificacao = crypto.randomBytes(3).toString('hex');
             
             const result = await userService.createUser(
@@ -197,8 +197,8 @@ class UserController {
           if (!user) {
             return response.status(404).json({ message: "Usuário não encontrado" });
           }
-
-          if (user.token_verificacao !== token) {
+          const lowerToken = token.toLowerCase();
+          if (user.token_verificacao !== lowerToken) {
             console.log(token)
             console.log(user.token_verificacao)
             return response.status(400).json({ message: "Token inválido" });
