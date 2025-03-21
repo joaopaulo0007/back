@@ -4,10 +4,10 @@ import userService from "../services/userService.js";
 import { enviarEmail } from "../utils/emailService.js"; 
 import medicoService from "../services/medicoService.js"; 
 import notificacoesService from "../services/notificacoesServices.js"; 
-import { generateTokensForConsulta } from '../services/tokenService.js'; 
 import pkg from "agora-access-token"
 const { RtcRole } = pkg;
 import { enviarNotificacaoSocket } from "../services/socketService.js";
+import tokenService from "../services/tokenService.js";
 const verificarConsultas = async () => { 
     const agora = new Date(); 
     const limite = new Date(agora.getTime() + 60 * 60 * 1000); // 1 hora antes 
@@ -56,7 +56,7 @@ const verificarConsultas = async () => {
                         }
                     };
                     await notificacoesService.salvarNotificacao(consulta.id_medico, notificacaoMedico, payloadMedico);
-                    enviarNotificacaoSocket(consulta.id_medico, payloadMedico);
+                    tokenService.sendNotificacao(userMedico.id,payloadMedico)
                     // Notificar o paciente
                     const notificacaoPaciente = mensagem;
                     const payloadUser= {
@@ -70,7 +70,7 @@ const verificarConsultas = async () => {
                         }
                     }
                     await notificacoesService.salvarNotificacao(consulta.id_usuario, notificacaoPaciente,payloadUser);
-                    enviarNotificacaoSocket(consulta.id_usuario, payloadUser);
+                    await tokenService.sendNotificacao(usuario.id,payloadUser)
                     // Marcar como notificado 
                     await consultaService.marcarComoNotificado(consulta.id); 
                 } 

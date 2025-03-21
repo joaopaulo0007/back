@@ -44,6 +44,24 @@ class NotificacaoService {
             client.release();
         }
     }
+      async enviarNotificacaoFCM(token, titulo, mensagem) {
+        const message = {
+            notification: {
+                title: titulo,
+                body: mensagem,
+            },
+            token: token, // O token FCM do dispositivo de destino
+        };
+    
+        try {
+            const response = await admin.messaging().send(message);
+            console.log('Notificação enviada com sucesso:', response);
+        } catch (error) {
+            console.error('Erro ao enviar notificação:', error);
+        }
+    };
+
+    
     
     async marcarComoLida(id) {
         const client = await pool.connect();

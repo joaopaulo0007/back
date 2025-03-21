@@ -9,32 +9,50 @@ import multer from 'multer';
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 class UserController {
-    async Login(request,response){
-        try{
-            const{email,senha}=request.body
-            console.log(email, senha)
-            const user= await userService.getuserByEmail(email)
-            if(!user){
+    async Login(request, response) {
+        try {
+            const { email, senha } = request.body;
+            console.log(email, senha);
+    
+            const user = await userService.getuserByEmail(email);
+            if (!user) {
                 return response.status(404).json({ message: "Usuário não encontrado" });
             }
-            if(!user.verificado){
-                return response.status(401).json({message:"usuário não verificado"})
+    
+            if (!user.verificado) {
+                return response.status(401).json({ message: "Usuário não verificado" });
             }
-            const senhaValida= await verificarSenha(String(senha), String(user.senha))
+    
+            const senhaValida = await verificarSenha(String(senha), String(user.senha));
             if (!senhaValida) {
-                return response.status(401).json({message:"senha incorreta"})
+                return response.status(401).json({ message: "Senha incorreta" });
             }
-            const medico= await medicoService.getMedicoByIdUser(user.id)
-            console.log(medico)
+    
+            // Verificar se o usuário já tem um token FCM
+            if (!user.token) {
+                // Gerar o token FCM para o usuário
+                const newToken = await gerarTokenFCM();  
+                // Salvar o token no banco
+                await notificacoesService.salvarToken_FCM(user.id, newToken);
+                // Atualizar o objeto do usuário com o novo token
+                user.token = newToken;
+            }
+    
+            const medico = await medicoService.getMedicoByIdUser(user.id);
+            console.log(medico);
             if (medico) {
-                return response.status(200).json(medico)
+                return response.status(200).json({ user, token: user.token });  // Retorna o token junto com os dados do médico
             }
-            return response.status(200).json(user)
-        }catch(error){
-          console.log(error)
-          return response.status(500).json({error:" erro ao realizar o login"})
+    
+            // Retorna o usuário e o token FCM
+            return response.status(200).json({ user, token: user.token });
+    
+        } catch (error) {
+            console.log(error);
+            return response.status(500).json({ error: "Erro ao realizar o login" });
         }
     }
+    
 
     async addUser(request, response) {
         try {

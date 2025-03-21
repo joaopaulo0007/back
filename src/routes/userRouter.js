@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { uploadHistorico } from "../services/userService.js";
 import userController from "../controllers/userController.js";
+import { salvarToken_FCM } from "../controllers/tokenController.js";
 const router =new Router();
 const config = userController;
 router.post("/login",config.Login)
@@ -13,5 +14,6 @@ router.get("/historico-exames/:id", config.getHistoricoExames);
 router.get("/historico-exames/usuario/:id",config.getAllHistoricoExames)
 router.put("/historico-exames/:id", config.updateHistoricoExames);
 router.post("/verificar-token",config.verifyEmail)
+router.post("/tokenFCM",salvarToken_FCM)
 
 export default router;

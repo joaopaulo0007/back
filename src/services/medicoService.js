@@ -73,6 +73,7 @@ class medicoService{
       async createHorariomedico(id_medico,dia_semana,horario_inicio,horario_fim){
         const client =await pool.connect()
         try {
+          console.log(horario_inicio)
             const result=await client.query(`INSERT INTO horario_medico(id_medico,dia_semana,horario_inicio,horario_fim) VALUES($1,$2,$3,$4) RETURNING*`,[id_medico,dia_semana,horario_inicio,horario_fim])
             return result.rows[0];
     

@@ -71,7 +71,10 @@ class UserService {
       async getuserByEmail(email){
         const client=await pool.connect()
         try {
-            const result= await client.query(`SELECT * FROM usuario where email=$1`,[email])
+            const result= await client.query(`SELECT u.*, t.token
+            FROM usuario u
+            LEFT JOIN tokens_firebase t ON u.id = t.id_usuario
+            WHERE u.email = $1`,[email])
             return result.rows[0]
         } catch (error) {
             console.log("erro ao buscar usuario")
