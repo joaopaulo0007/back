@@ -1,17 +1,7 @@
 import consultaService from "../services/consultaService.js"
 
 class consultaController{
-    async addConsulta(request, response) {
-        try {
-            const { id_usuario, id_medico, data, link_chamada, ocorreu } = request.body
-        const result = await  consultaService.createConsulta(id_usuario, id_medico, data, ocorreu, link_chamada)
-        return response.status(201).json(result)
-        } catch (error) {
-            return response.status(500).json({error:" erro ao adicionar consulta"})
-        }
-        
 
-    }
     async addConsultaAgendada(request, response) {
         try {
             const { id_usuario, id_medico, horario_inicio,horario_fim } = request.body
@@ -23,25 +13,16 @@ class consultaController{
         
 
     }
-    async getConsulta(request, response) {
+    async getAllConsultasMedico(request,response){
         try {
-            const id = Number(request.params.id)
-        const result =await consultaService.getConsultaById(id)
-        return response.status(200).json(result)
-        } catch (error) {
-            return response.status(500).json({error:"consulta não encontrada"})
-        }
-        
-    }
-    async getAllConsultas(request,response){
-        try {
-            const id=Number(request.params)
-            const result=await consultaService.getHistoricoConsultasById(id)
+            const id_medico=Number(request.params.id)
+            const result=consultaService.getAllConsultasAgendadasByMedico(id_medico)
             return response.status(200).json(result)
         } catch (error) {
-            return response.status(500).json({error:" consultas não encontradas"})
+          return response.status(500).json({error:"erro ao buscar consultas do medico"})  
         }
     }
+ 
     async getConsultaAgendada(request, response) {
         try {
             const id = Number(request.params.id)
@@ -63,17 +44,7 @@ class consultaController{
             return response.status(500).json({error:"erro ao buscar consultas do medico"})
         }
     }
-    async updateConsulta(request, response) {
-        try {
-            const id = Number(request.params.id)
-        const { id_usuario, id_medico, data, ocorreu, link_chamada } = request.body
-        const result =await consultaService.updateConsulta(id, id_usuario, id_medico, data, ocorreu, link_chamada)
-        return response.status(200).json(result)
-        } catch (error) {
-            return response.status(500).json({error:"erro ao atualizar consulta"})
-        }
-        
-    }
+
     async updateConsultaAgendada(request, response) {
         try {
         const id = Number(request.params.id)
@@ -85,16 +56,7 @@ class consultaController{
         }
 
     }
-    async deleteConsulta(request, response) {
-        try {
-             const id = Number(request.params.id)
-        const result =await consultaService.deleteConsulta(id)
-        return response.status(204).json(result)
-        } catch (error) {
-            return response.status(500).json({error:"erro ao deletar consulta"})
-        }
-       
-    }
+
     async deleteConsultaAgendada(request, response) {
         try {
             const id = Number(request.params.id)
