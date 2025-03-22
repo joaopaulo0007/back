@@ -103,23 +103,25 @@ class medicoService{
           client.release();
         }
       }
-      async getMedicoByIdUser(id){
-        const client= await pool.connect()
+      async getMedicoByIdUser(id) {
+        const client = await pool.connect();
         try {
-          const result = await client.query(
-            `SELECT medico.*, usuario.nome 
-             FROM usuario 
-             JOIN medico ON  usuario.id=  medico.id_usuario
-             WHERE usuario.id = $1`,
-            [id]
-          );
-          return result.rows[0]
+            const result = await client.query(
+                `SELECT medico.*, usuario.nome, t.token
+                 FROM usuario
+                 JOIN medico ON usuario.id = medico.id_usuario
+                 LEFT JOIN tokens_firebase t ON usuario.id = t.id_usuario
+                 WHERE usuario.id = $1`,
+                [id]
+            );
+            return result.rows[0];
         } catch (error) {
-          console.error("❌ Erro ao buscar médico", error);
-        }finally{
-          client.release()
+            console.error("❌ Erro ao buscar médico", error);
+        } finally {
+            client.release();
         }
-      }
+    }
+    
       async updateFotoNomeSenhamedico(id, imagem, nome, senha) {
         const client = await pool.connect();
         try {

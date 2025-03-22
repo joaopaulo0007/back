@@ -18,6 +18,7 @@ class tokenService{
     async salvarToken_FCM(id_usuario, token) {
         const client = await pool.connect();
         try {
+            console.log(token)
             // Inserir o token diretamente, pois sabemos que o usuário não tem token
             await client.query(
                 "INSERT INTO tokens_firebase (id_usuario, token) VALUES ($1, $2)", 

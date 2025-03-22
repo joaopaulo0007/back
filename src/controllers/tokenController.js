@@ -18,5 +18,6 @@ export const salvarToken_FCM=async(req,res)=>{
         res.status(201).send(result);
     } catch (error) {
         console.error("erro ao salvar tokenFCM ",error)
+        return res.status(500).send({ message: "Erro interno" });
     }
 }

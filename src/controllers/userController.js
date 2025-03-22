@@ -28,24 +28,16 @@ class UserController {
                 return response.status(401).json({ message: "Senha incorreta" });
             }
     
-            // Verificar se o usuário já tem um token FCM
-            if (!user.token) {
-                // Gerar o token FCM para o usuário
-                const newToken = await gerarTokenFCM();  
-                // Salvar o token no banco
-                await notificacoesService.salvarToken_FCM(user.id, newToken);
-                // Atualizar o objeto do usuário com o novo token
-                user.token = newToken;
-            }
+
     
             const medico = await medicoService.getMedicoByIdUser(user.id);
             console.log(medico);
             if (medico) {
-                return response.status(200).json({ user, token: user.token });  // Retorna o token junto com os dados do médico
+                return response.status(200).json(medico);  // Retorna o token junto com os dados do médico
             }
     
             // Retorna o usuário e o token FCM
-            return response.status(200).json({ user, token: user.token });
+            return response.status(200).json({user,id_usuario:user.id});
     
         } catch (error) {
             console.log(error);
