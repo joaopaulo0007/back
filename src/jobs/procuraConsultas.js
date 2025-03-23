@@ -4,9 +4,7 @@ import userService from "../services/userService.js";
 import { enviarEmail } from "../utils/emailService.js"; 
 import medicoService from "../services/medicoService.js"; 
 import notificacoesService from "../services/notificacoesServices.js"; 
-import pkg from "agora-access-token"
-const { RtcRole } = pkg;
-import { enviarNotificacaoSocket } from "../services/socketService.js";
+
 import tokenService from "../services/tokenService.js";
 const verificarConsultas = async () => { 
     const agora = new Date(); 
@@ -31,15 +29,15 @@ const verificarConsultas = async () => {
                     
  
                     // Verificar se os tokens já existem 
-                    let tokens = consulta.rtc_token; 
+                    let rtc_token = consulta.rtc_token; 
                      
  
-                    if (!tokens) { 
+                    if (!rtc_token) { 
                         // Gerar tokens para médico e paciente 
-                        tokens = generateTokensForConsulta(channelName, consulta.id_medico, role,3600); 
+                        rtc_token = generateTokensForConsulta(channelName, consulta.id_medico, role,3600); 
  
                         // Atualizar a consulta com os novos tokens 
-                        await consultaService.updateConsultaTokens(consulta.id, tokensMedico.rtcToken, tokensPaciente.rtmToken); 
+                        await consultaService.updateConsultaTokens(consulta.id, rtc_token); 
                     } 
  
                     // Notificar o médico
@@ -48,7 +46,7 @@ const verificarConsultas = async () => {
                     const payloadMedico = {
                         tipo: 'consulta_proxima',
                         mensagem: notificacaoMedico,
-                        token: tokensMedico.rtcToken,
+                        token: rtc_token,
                         consulta: {
                             id: consulta.id,
                             horario: consulta.horario_inicio,
@@ -62,7 +60,7 @@ const verificarConsultas = async () => {
                     const payloadUser= {
                         tipo: 'consulta_proxima',
                         mensagem: notificacaoPaciente,
-                        token: tokensPaciente.rtcToken,
+                        token: rtc_token,
                         consulta: {
                             id: consulta.id,
                             horario: consulta.horario_inicio,

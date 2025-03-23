@@ -40,6 +40,7 @@ class tokenService{
                 "SELECT token FROM tokens_firebase WHERE id_usuario = $1",
                 [id_usuario]
             );
+            return result.rows.length > 0 ? result.rows[0].token : null;
         } catch (error) {
             console.error("Erro ao buscar token FCM:", error);
             return null;
@@ -49,15 +50,21 @@ class tokenService{
         }
     }
     //função para enviar notificações para um usuario
-    async sendNotificacao(userId, mensagem)  {
+    async sendNotificacao(userId, payload) {
         const token = await this.getTokenByUserId(userId);
         if (token) {
             const message = {
                 notification: {
                     title: "Nova Notificação",
-                    body: mensagem,
+                    body: typeof payload === 'string' ? payload : payload.mensagem,
                 },
-                token: token,  // Token FCM do usuário
+                data: typeof payload === 'object' ? 
+                      Object.fromEntries(
+                        Object.entries(payload).map(([key, value]) => 
+                          [key, typeof value === 'object' ? JSON.stringify(value) : String(value)]
+                        )
+                      ) : {},
+                token: token,
             };
     
             try {
@@ -66,11 +73,10 @@ class tokenService{
             } catch (error) {
                 console.error("Erro ao enviar a notificação:", error);
             }
+        } else {
+            console.error("tokenFCM não encontrado para este usuário");
         }
-        else{
-            console.error("tokenFCM não encontrado para este usuario")
-        }
-    };
+    }
     
 
 }

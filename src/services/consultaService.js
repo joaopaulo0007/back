@@ -139,12 +139,12 @@ class consultaService{
            return error
         }
       }
-      async updateConsultaTokens(id, rtcToken) {
+      async updateConsultaTokens(id, rtc_token) {
         const client = await pool.connect();
         try {
           await client.query(
             "UPDATE consultas_agendadas SET rtc_token = $1WHERE id = $3",
-            [rtcToken, id]
+            [rtc_token, id]
           );
         } catch (err) {
           console.error("Erro ao atualizar tokens da consulta:", err);
