@@ -44,6 +44,17 @@ class consultaController{
             return response.status(500).json({error:"erro ao buscar consultas do medico"})
         }
     }
+    async getConsultaAgendadaAntesHojeBYMedico(request,response){
+        try {
+            const id_medico=Number(request.params.id)
+            const result=await consultaService.getConsultaAgendadasAntesHojeByMedico(id_medico)
+            console.log(result)
+            return response.status(200).json(result)
+        } catch (error) {
+           console.log(error)
+           return response.status(500).json({error:"erro ao buscar consultas do medico"}) 
+        }
+    }
 
     async updateConsultaAgendada(request, response) {
         try {

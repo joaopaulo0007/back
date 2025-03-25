@@ -10,4 +10,5 @@ router.get("/consultas-agendadas/:id", consultasController.getConsultaAgendada);
 router.put("/consultas-agendadas/:id", consultasController.updateConsultaAgendada);
 router.post("/token",generateTokenForConsulta);
 router.get("/consultas-agendadas/medico/:id", consultasController.getConsultaAgendadaByMedico);
+router.get("/consultas-agendadas/medico/antes-hoje/:id", consultasController.getConsultaAgendadaAntesHojeBYMedico);
 export default router;

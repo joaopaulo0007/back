@@ -30,6 +30,26 @@ class consultaService{
           client.release();
         }
       }
+      async getConsultaAgendadasAntesHojeByMedico(id_medico) {
+        const client = await pool.connect();
+        try {
+            const data = new Date();
+            const result = await client.query(
+                `SELECT consultas_agendadas.*, usuario.nome, usuario.cpf 
+                 FROM consultas_agendadas 
+                 JOIN usuario ON consultas_agendadas.id_usuario = usuario.id 
+                 WHERE consultas_agendadas.id_medico = $1 AND horario_inicio < $2`,
+                [id_medico, data]
+            );
+    
+            return result.rows;
+        } catch (error) {
+            return error;
+        } finally {
+            client.release();
+        }
+    }
+    
       async createConsultaAgendada(id_paciente,id_medico,horario_inicio,horario_fim){
         const client =await pool.connect()
         try {
@@ -137,6 +157,8 @@ class consultaService{
           return result.rows;
         } catch (error) {
            return error
+        }finally{
+          client.release()
         }
       }
       async updateConsultaTokens(id, rtc_token) {

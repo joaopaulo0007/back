@@ -15,7 +15,7 @@ export const pool = new Pool({
     },
     max: 20,                             // Número máximo de conexões
     idleTimeoutMillis: 30000,            // Tempo máximo que uma conexão pode ficar ociosa
-    connectionTimeoutMillis: 2000,       // Tempo máximo para estabelecer conexão
+    connectionTimeoutMillis: 5000,       // Tempo máximo para estabelecer conexão
     maxUses: 7500,                       // Número máximo de reutilizações de uma conexão antes de ser fechada
     
     // Adicionar retry em caso de falha
