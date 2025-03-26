@@ -1,5 +1,5 @@
 import consultaService from "../services/consultaService.js"
-
+import tokenService from "../services/tokenService.js"
 class consultaController{
 
     async addConsultaAgendada(request, response) {
@@ -85,6 +85,24 @@ class consultaController{
             return res.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:"erro ao buscar consultas do medico"})
+        }
+      }
+      async sendNotificacaoCancelamentoConsulta(request, response){
+        try {
+            const{nome_medico,nome_usuario,horario_inicio,mensagem,id_usuario}=request.body
+            const notificacaoMedico = `Sua consulta com ${usuario.nome} às ${consulta.horario_inicio} foi cancelada.`;
+            const payload={
+                tipo:'consulta_cancelada',
+                mensagem:mensagem? mensagem:notificacaoMedico,
+                consulta:{
+                    horario:horario_inicio,
+                    paciente:nome_usuario,
+                    medico:nome_medico
+                }
+            }
+            tokenService.sendNotificacao(id_usuario,payload)
+        } catch (error) {
+            
         }
       }
 }

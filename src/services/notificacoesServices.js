@@ -1,6 +1,5 @@
 import { pool } from "../database/database.js";
-import { enviarNotificacaoSocket } from "./socketService.js";
-
+import tokenService from "./tokenService.js";
 class NotificacaoService {
     async salvarNotificacao(userId, mensagem, dados = null) {
         const client = await pool.connect();
@@ -16,9 +15,8 @@ class NotificacaoService {
                 mensagem: mensagem,
                 timestamp: new Date()
             };
+            tokenService.sendNotificacao(userId, notificacaoDados);
             
-            // Enviar notificação via Socket.IO
-            enviarNotificacaoSocket(userId, notificacaoDados);
             
             return true;
         } catch (err) {
@@ -44,22 +42,7 @@ class NotificacaoService {
             client.release();
         }
     }
-      async enviarNotificacaoFCM(token, titulo, mensagem) {
-        const message = {
-            notification: {
-                title: titulo,
-                body: mensagem,
-            },
-            token: token, // O token FCM do dispositivo de destino
-        };
     
-        try {
-            const response = await admin.messaging().send(message);
-            console.log('Notificação enviada com sucesso:', response);
-        } catch (error) {
-            console.error('Erro ao enviar notificação:', error);
-        }
-    };
 
     
     

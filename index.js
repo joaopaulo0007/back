@@ -3,7 +3,6 @@ import http from "http";
 import configApp from "./src/config/index.js";
 import initScheduler from "./src/jobs/procuraConsultas.js";
 import { timeout } from './src/middlewares/timeout.js';
-import { initSocketService } from "./src/services/socketService.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -28,8 +27,6 @@ process.on('SIGTERM', () => {
 // Configurar o servidor
 configApp(app);
 
-// Inicializar Socket.IO
-initSocketService(server);
 
 // Inicializar o scheduler de consultas
 initScheduler();
