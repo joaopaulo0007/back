@@ -1,5 +1,6 @@
 import consultaService from "../services/consultaService.js"
 import tokenService from "../services/tokenService.js"
+import notificacoesServices from "../services/notificacoesServices.js"
 class consultaController{
 
     async addConsultaAgendada(request, response) {
@@ -60,7 +61,7 @@ class consultaController{
         try {
         const id = Number(request.params.id)
         const { id_usuario, id_medico, horario_inicio, horario_fim } = request.body
-        const result =await consultaService.updateConsultaAgendada(id, id_usuario, id_medico, data)
+        const result =await consultaService.updateConsultaAgendada(id, id_usuario, id_medico, horario_inicio,horario_fim)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:" erro ao adicionar consulta agendada"})
@@ -71,7 +72,7 @@ class consultaController{
     async deleteConsultaAgendada(request, response) {
         try {
             const id = Number(request.params.id)
-        const result =await consultaService.deleteconsultaAgendada(id)
+        const result =await consultaService.deleteConsultaAgendada(id)
         return response.status(204).json(result) 
         } catch (error) {
            return response.status(500).json({error:"erro ao deletar consulta agendada"}) 
@@ -101,8 +102,11 @@ class consultaController{
                 }
             }
             tokenService.sendNotificacao(id_usuario,payload)
+            notificacoesServices.salvarNotificacao(id_usuario,mensagem,payload)
+            return response.status(200).json({message:"notificação enviada"})
         } catch (error) {
-            
+            console.log(error)
+            return response.status(500).json({error:"erro ao enviar notificação"})
         }
       }
 }
