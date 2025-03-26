@@ -69,8 +69,8 @@ class consultaController{
     async updateConsultaAgendada(request, response) {
         try {
         const id = Number(request.params.id)
-        const { id_usuario, id_medico, horario_inicio, horario_fim } = request.body
-        const result =await consultaService.updateConsultaAgendada(id, id_usuario, id_medico, horario_inicio,horario_fim)
+        const { id_usuario, id_medico, horario_inicio, horario_fim,status } = request.body
+        const result =await consultaService.updateConsultaAgendada(id, id_usuario, id_medico, horario_inicio,horario_fim,status)
         return response.status(200).json(result)
         } catch (error) {
             return response.status(500).json({error:" erro ao adicionar consulta agendada"})
@@ -100,7 +100,7 @@ class consultaController{
       async sendNotificacaoCancelamentoConsulta(request, response){
         try {
             const{nome_medico,nome_usuario,horario_inicio,mensagem,id_usuario}=request.body
-            const notificacaoMedico = `Sua consulta com ${usuario.nome} às ${consulta.horario_inicio} foi cancelada.`;
+            const notificacaoMedico = `Sua consulta com ${nome_usuario} às ${horario_inicio} foi cancelada.`;
             const payload={
                 tipo:'consulta_cancelada',
                 mensagem:mensagem? mensagem:notificacaoMedico,
@@ -110,6 +110,7 @@ class consultaController{
                     medico:nome_medico
                 }
             }
+            consultaService.updateConsultaAgendada(request.params.id, null, null, null,null,'cancelada')
             tokenService.sendNotificacao(id_usuario,payload)
             notificacoesServices.salvarNotificacao(id_usuario,mensagem,payload)
             return response.status(200).json({message:"notificação enviada"})

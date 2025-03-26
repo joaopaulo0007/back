@@ -70,7 +70,8 @@ class consultaService {
   async createConsultaAgendada(id_paciente, id_medico, horario_inicio, horario_fim) {
     const client = await pool.connect()
     try {
-      const result = await client.query(`INSERT INTO consultas_agendadas(id_usuario, id_medico,horario_inicio,horario_fim) VALUES ($1,$2,$3,$4) RETURNING*`, [id_paciente, id_medico, horario_inicio, horario_fim])
+      const status = "agendada"
+      const result = await client.query(`INSERT INTO consultas_agendadas(id_usuario, id_medico,horario_inicio,horario_fim,status) VALUES ($1,$2,$3,$4,$5) RETURNING*`, [id_paciente, id_medico, horario_inicio, horario_fim,status])
       return result.rows[0];
 
     } catch (err) {
@@ -115,7 +116,7 @@ class consultaService {
 
 
 
-  async updateConsultaAgendada(id, id_paciente, id_medico, horario_inicio, horario_fim) {
+  async updateConsultaAgendada(id, id_paciente, id_medico, horario_inicio, horario_fim,status) {
     const client = await pool.connect();
     try {
       const fields = [];
@@ -136,6 +137,10 @@ class consultaService {
       if (horario_fim) {
         fields.push(`data = $${fields.length + 1}`);
         values.push(horario_fim.toISO());
+      }
+      if(status){
+        fields.push(`status = $${fields.length + 1}`);
+        values.push(status);
       }
 
       if (fields.length === 0) {
@@ -170,7 +175,7 @@ class consultaService {
   async getConsultasAgendadasByMedico(id_medico) {
     const client = await pool.connect();
     try {
-      const result = await client.query(`SELECT  consultas_agendadas.*, usuario.nome, usuario.cpf FROM consultas_agendadas JOIN usuario ON consultas_agendadas.id_usuario = usuario.id WHERE consultas_agendadas.id_medico= $1 order by horario_inicio `, [id_medico])
+      const result = await client.query(`SELECT  consultas_agendadas.*, usuario.nome, usuario.cpf FROM consultas_agendadas JOIN usuario ON consultas_agendadas.id_usuario = usuario.id WHERE consultas_agendadas.id_medico= $1 AND (consultas_agendadas.status != 'cancelada' OR consultas_agendadas.status IS NULL) order by horario_inicio `, [id_medico])
       return result.rows;
     } catch (error) {
       return error
@@ -182,7 +187,7 @@ class consultaService {
     const client = await pool.connect();
     try {
       await client.query(
-        "UPDATE consultas_agendadas SET rtc_token = $1WHERE id = $3",
+        "UPDATE consultas_agendadas SET rtc_token = $1 WHERE id = $2",
         [rtc_token, id]
       );
     } catch (err) {

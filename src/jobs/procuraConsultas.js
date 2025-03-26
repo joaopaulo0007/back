@@ -4,7 +4,6 @@ import userService from "../services/userService.js";
 import { enviarEmail } from "../utils/emailService.js"; 
 import medicoService from "../services/medicoService.js"; 
 import notificacoesService from "../services/notificacoesServices.js"; 
-
 import tokenService from "../services/tokenService.js";
 const verificarConsultas = async () => { 
     const agora = new Date(); 
@@ -34,9 +33,10 @@ const verificarConsultas = async () => {
  
                     if (!rtc_token) { 
                         // Gerar tokens para médico e paciente 
-                        rtc_token = generateTokensForConsulta(channelName, consulta.id_medico, role,3600); 
+                        rtc_token = (await tokenService.generateTokensForConsulta(channelName, consulta.id_medico, role, 3600)).rtcToken;
  
                         // Atualizar a consulta com os novos tokens 
+                        console.log("Atualizando tokens da consulta", rtc_token);
                         await consultaService.updateConsultaTokens(consulta.id, rtc_token); 
                     } 
  
@@ -53,7 +53,7 @@ const verificarConsultas = async () => {
                             paciente: usuario.nome
                         }
                     };
-                    await notificacoesService.salvarNotificacao(consulta.id_medico, notificacaoMedico, payloadMedico);
+                    await notificacoesService.salvarNotificacao(userMedico.id, notificacaoMedico, payloadMedico);
                     tokenService.sendNotificacao(userMedico.id,payloadMedico)
                     // Notificar o paciente
                     const notificacaoPaciente = mensagem;

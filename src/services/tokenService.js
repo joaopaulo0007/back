@@ -12,6 +12,7 @@ class tokenService{
     async generateTokensForConsulta (channelName, uid, role, expireTime = 3600) {
    
     const token= await axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}=`)
+    console.log(token.data)
     return token.data;
 }; 
 // salva o token do firebase no banco de dados, ele será usado para enviar notificações
@@ -19,11 +20,15 @@ class tokenService{
         const client = await pool.connect();
         try {
             console.log(token)
+            const result=await client.query('SELECT * FROM tokens_firebase WHERE id_usuario = $1', [id_usuario]);
             // Inserir o token diretamente, pois sabemos que o usuário não tem token
-            await client.query(
+            if(result.rows.length===0){
+                await client.query(
                 "INSERT INTO tokens_firebase (id_usuario, token) VALUES ($1, $2)", 
                 [id_usuario, token]
             );
+            }
+            
             return true;
         } catch (error) {
             console.error("Erro ao salvar o token FCM:", error);
