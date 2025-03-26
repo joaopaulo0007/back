@@ -37,7 +37,7 @@ class UserController {
             }
     
             // Retorna o usuário e o token FCM
-            return response.status(200).json({user,id_usuario:user.id});
+            return response.status(200).json({id_usuario:user.id,nome:user.nome,cpf:user.cpf,email:user.email,data_aniversario:user.data_aniversario,telefone:user.telefone,token:user.token});
     
         } catch (error) {
             console.log(error);

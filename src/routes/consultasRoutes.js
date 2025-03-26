@@ -3,7 +3,6 @@ import consultasController from "../controllers/consultasController.js";
 import { generateTokenForConsulta } from "../controllers/tokenController.js";
 const router = new Router();
 
-
 // Rotas para Consulta Agendada
 router.post("/consultas-agendadas", consultasController.addConsultaAgendada);
 router.get("/consultas-agendadas/:id", consultasController.getConsultaAgendada);
