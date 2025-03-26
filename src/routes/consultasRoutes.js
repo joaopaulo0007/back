@@ -11,4 +11,5 @@ router.post("/token",generateTokenForConsulta);
 router.get("/consultas-agendadas/medico/:id", consultasController.getConsultaAgendadaByMedico);
 router.get("/consultas-agendadas/medico/antes-hoje/:id", consultasController.getConsultaAgendadaAntesHojeBYMedico);
 router.post("/cancelamento-consulta/:id",consultasController.sendNotificacaoCancelamentoConsulta)
+router.get("/consultas-agendadas/usuario/:id", consultasController.getAllConsultasAgendadasByUser);
 export default router;

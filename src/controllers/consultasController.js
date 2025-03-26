@@ -14,6 +14,15 @@ class consultaController{
         
 
     }
+    async getAllConsultasAgendadasByUser(request,response){
+        try {
+            const id_usuario=Number(request.params.id)
+            const result=await consultaService.getAllConsultasAgendadasByUser(id_usuario)
+            return response.status(200).json(result)
+        } catch (error) {
+            return response.status(500).json({error:"erro ao buscar consultas do usuario"})  
+        }
+    }
     async getAllConsultasMedico(request,response){
         try {
             const id_medico=Number(request.params.id)
