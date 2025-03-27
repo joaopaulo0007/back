@@ -33,7 +33,8 @@ class consultaService {
   async getAllConsultasAgendadasByUser(id_usuario) {
     const client = await pool.connect()
     try {
-      const hoje = new Date()
+      let hoje = new Date()
+      hoje.setMinutes(hoje.getMinutes() - 30);
       const result = await client.query(`SELECT consultas_agendadas.*, usuario.nome
                                           FROM consultas_agendadas
                                           JOIN medico ON consultas_agendadas.id_medico = medico.id

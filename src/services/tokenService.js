@@ -12,6 +12,7 @@ class tokenService{
     async generateTokensForConsulta (channelName, uid, role, expireTime = 3600) {
    
     const token= await axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}=`)
+    console.log(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}`)
     console.log(token.data)
     return token.data;
 }; 
