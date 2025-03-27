@@ -11,7 +11,7 @@ class tokenService{
     //geração de token da API agora.io para video chamada
     async generateTokensForConsulta (channelName, uid, role, expireTime = 3600) {
    
-    const token= await axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}=`)
+    const token= await axios.get(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/0/?${expireTime}=`)
     console.log(`https://telesaude-token-server.onrender.com/rtc/${channelName}/${role}/uid/${uid}/?${expireTime}`)
     console.log(token.data)
     return token.data;
